@@ -71,6 +71,19 @@ def missing_after_transfer(run_number):
     print("\nPercentage processed: ", round((num_processed_files/num_raw_files)*100,2), '%')
     print('\n')
 
+    # write to run summary file
+    with open('R' + run_number + '_summary.txt', 'a') as file:
+        file.write('R' + run_number + ' transfer summary\n')
+        file.write('\nNumber of raw files: ' + str(num_raw_files))
+        file.write('\nNumber of processed files: ' + str(num_processed_files))
+        file.write('\nNumber of missing files: ' + str(num_raw_files-num_processed_files))
+        file.write('\nMissing processed files: ' + str(missing_files) + '\n')
+        file.write('\nPercentage processed: ' + str(round((num_processed_files/num_raw_files)*100,2)) + '%')
+        
+    os.system('cp R' + run_number + '_summary.txt ' + processed_dir + '.')
+    time.sleep(1)
+    os.system('rm R' + run_number + '_summary.txt')
+
     return
 
 
