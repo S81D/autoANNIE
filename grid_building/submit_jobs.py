@@ -16,7 +16,7 @@ def submit_grid_job(run, p_start, p_end, input_path, output_path, TA_tar_name, d
     file.write('OUTPUT_FOLDER=' + output_path + run + '\n')
     file.write('mkdir -p $OUTPUT_FOLDER \n')
     file.write('\n')
-    file.write('jobsub_submit --memory=4000MB --expected-lifetime=2h -G annie --disk=' + disk_space + 'GB --resource-provides=usage_model=OFFSITE --site=Colorado,BNL,Caltech,Nebraska,SU-OG,UCSD,NotreDame,MIT,Michigan,MWT2,UChicago,Hyak_CE ')
+    file.write('jobsub_submit --memory=2000MB --expected-lifetime=1h -G annie --disk=' + disk_space + 'GB --resource-provides=usage_model=OFFSITE --site=Colorado,BNL,Caltech,Nebraska,SU-OG,UCSD,NotreDame,MIT,Michigan,MWT2,UChicago,Hyak_CE ')
 
     for i in range(int(p_start), int(p_end)+1):
         file.write('-f ${RAWDATA_PATH}/RAWDataR' + run + 'S0p' + str(i) + ' ')
