@@ -4,16 +4,19 @@
 # Date: March 2024
 
 #########################################################################################
-# Usage: python3 master_script.py --run_floor --run_ceiling --step_size --resub_step_size
+# Usage: python3 master_script.py --run_ceiling --run_floor --step_size --resub_step_size
 
-# run_floor = furthest back run in time the code will event build (input run number)
 # run_ceiling = where to start from (set to 'current' to build all runs from present)
+# run_floor = furthest back run in time the code will event build (input run number)
 # step_size = number of part files per job for event building
 # resub_step_size = number of part files per job for resubmitting event building jobs
 # (last two are sensitive to run type)
 
-# The lifetime of the event building jobs is given in the submit_jobs.py script: 2hr
-# for BC, it is given in the submit_grid_job.sh script in the /BeamCluster folder: 3hr
+
+# Grid job specifications:
+# -- lifetime: 1hr  (for event building and BC)
+# -- memory: 2GB (event building)  1GB (BC)
+# -- disk: varies depending on number of part files, but typically between 5 and 10GB (event building)   5GB for BC
 
 #########################################################################################
 import sys, os
@@ -29,6 +32,15 @@ resub_step_size = int(sys.argv[4])
 print('\n---------------------------------------------------')
 print('        Automated EventBuilding initiated            ')
 print('---------------------------------------------------\n')
+
+print('The following arguments have been provided:\n')
+print('  - Run ceiling (earliest run):  ' + str(run_ceiling))
+print('  - Run floor (furthest back run):  ' + str(run_floor))
+print('  - Job part file size:  ' + str(step_size))
+print('  - Job re-submission part file size:  ' + str(resub_step_size))
+time.sleep(5)
+print('\n\nProceeding with event building...')
+time.sleep(3)
 
 # Part 1 - Initial job submission
 
@@ -93,7 +105,7 @@ for run in runs_to_run:
 
 
 # Now that we have the trigoverlap files produced, we can send the initial grid jobs
-print('\n--------------------------------------------------------------')
+print('\n-----------------------------------------------------------------')
 print('Submitting initial set of jobs to the grid with step size = ' + str(step_size) + '...\n')
 time.sleep(3)
 for i in range(len(runs_to_run)):
