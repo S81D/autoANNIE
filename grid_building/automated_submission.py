@@ -59,7 +59,7 @@ if missing == 'n':
 
     # calculate disk space requirements
     import math
-    disk_space = str(math.ceil(7 + .3*step_size + .05*step_size))   # fine for beam files
+    #disk_space = str(math.ceil(7 + .3*step_size + .05*step_size))   # fine for beam files
     disk_space = str(math.ceil(2 + 2.5 + .25*step_size + .15*step_size))    # refined based on job histories
     #disk_space = str(10)     # typically fine as a default - good for Laser single part submissions
 
@@ -168,7 +168,7 @@ if missing == 'y':
 
         # calculate disk space requirements
         import math
-        disk_space = str(math.ceil(7 + .3*step_size + .05*step_size))   # fine for beam files
+        #disk_space = str(math.ceil(7 + .3*step_size + .05*step_size))   # fine for beam files
         disk_space = str(math.ceil(2 + 2.5 + .25*step_size + .15*step_size))    # refined based on job histories
         #disk_space = str(10)     # typically fine as a default - good for Laser single part submissions
 
