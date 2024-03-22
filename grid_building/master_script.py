@@ -110,13 +110,15 @@ print('Submitting initial set of jobs to the grid with step size = ' + str(step_
 time.sleep(3)
 for i in range(len(runs_to_run)):
     if length_of_runs[i] < step_size:
-        step_size = length_of_runs[i]
+        small_step = length_of_runs[i]
+    else:
+        small_step = step_size
 
     # omit the runs that have some part files in /scratch
     output_path = "/pnfs/annie/scratch/users/doran/output/" + runs_to_run[i] + "/"
     exists_and_contains = os.path.exists(output_path) and any(file.startswith('Processed') and not file.endswith(".data") for file in os.listdir(output_path))
     if exists_and_contains == False:
-        os.system('python3 automated_submission.py ' + runs_to_run[i] + ' n ' + str(step_size))   # no re-run
+        os.system('python3 automated_submission.py ' + runs_to_run[i] + ' n ' + str(small_step))   # no re-run
         time.sleep(3)
     else:
         print('\n' + runs_to_run[i] + ' processed files present in /scratch, not submitting this run in first batch...')
