@@ -1,0 +1,4 @@
+## To restrict to FNAL-only nodes, include in the jobsub_submit command:
+--resource-provides=usage_model=DEDICATED,OPPORTUNISTIC
+
+and remove any --site args (i.e., remove --site=Colorado,BNL,Caltech,Nebraska,SU-OG,UCSD,NotreDame,MIT,Michigan,MWT2,UChicago,Hyak_CE)
