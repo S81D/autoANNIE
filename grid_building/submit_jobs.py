@@ -16,8 +16,13 @@ def submit_grid_job(run, p_start, p_end, input_path, output_path, TA_tar_name, d
     file.write('OUTPUT_FOLDER=' + output_path + run + '\n')
     file.write('mkdir -p $OUTPUT_FOLDER \n')
     file.write('\n')
+
+    # Default (offsite resources)
     file.write('jobsub_submit --memory=2000MB --expected-lifetime=1h -G annie --disk=' + disk_space + 'GB --resource-provides=usage_model=OFFSITE --site=Colorado,BNL,Caltech,Nebraska,SU-OG,UCSD,NotreDame,MIT,Michigan,MWT2,UChicago,Hyak_CE ')
 
+    # FNAL-only nodes
+    #file.write('jobsub_submit --memory=2000MB --expected-lifetime=1h -G annie --disk=' + disk_space + 'GB --resource-provides=usage_model=DEDICATED,OPPORTUNISTIC ')
+    
     for i in range(int(p_start), int(p_end)+1):
         file.write('-f ${RAWDATA_PATH}/RAWDataR' + run + 'S0p' + str(i) + ' ')
 
@@ -78,6 +83,12 @@ def grid_job(run, user, input_path, TA_tar_name, name_TA):
     file.write('echo "Trig overlap files present:" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('ls -v /srv/Trig* >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('echo "" >> ${DUMMY_OUTPUT_FILE} \n')
+    file.write('\n')
+
+    # ensure singularity is properly bind-mounted
+    file.write('\n')
+    file.write('echo "Make sure singularity is bind mounting correctly (ls /cvmfs/singularity)" >> ${DUMMY_OUTPUT_FILE} \n')
+    file.write('ls /cvmfs/singularity.opensciencegrid.org >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('\n')
 
     file.write('# Setup singularity container \n')
