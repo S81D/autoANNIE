@@ -49,6 +49,9 @@ echo "Processed files present:" >> ${DUMMY_OUTPUT_FILE}
 ls -v /srv/Processed* >> ${DUMMY_OUTPUT_FILE}
 echo "" >> ${DUMMY_OUTPUT_FILE}
 
+echo "Make sure singularity is bind mounting correctly (ls /cvmfs/singularity)" >> ${DUMMY_OUTPUT_FILE}
+ls /cvmfs/singularity.opensciencegrid.org >> ${DUMMY_OUTPUT_FILE}
+
 # Setup singularity container 
 singularity exec -B/srv:/srv /cvmfs/singularity.opensciencegrid.org/anniesoft/toolanalysis\:latest/ $CONDOR_DIR_INPUT/run_container_job.sh $PART_NAME $PI $PF
 
