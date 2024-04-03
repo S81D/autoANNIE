@@ -23,7 +23,7 @@ import sys, os
 import time
 import helper_script
 
-run_ceiling = sys.argv[1]
+run_ceiling = int(sys.argv[1])
 run_floor = int(sys.argv[2])
 step_size = int(sys.argv[3])
 resub_step_size = int(sys.argv[4])
@@ -63,12 +63,12 @@ all_pro.reverse()
 
 runs_to_run = []; length_of_runs = []
 time.sleep(1)
-if run_ceiling == 'current':
+if str(run_ceiling) == 'current':
     starting_point = 1
 else:
     starting_point = 0
 for i in range(starting_point,len(all_raw)):      # if 'current', ignore latest run as it is still likely transferring from DAQ
-    if run_ceiling != 'current':
+    if str(run_ceiling) != 'current':
         if all_raw[i] not in all_pro and run_ceiling >= int(all_raw[i]) >= run_floor:
             list_parts = os.listdir('/pnfs/annie/persistent/raw/raw/' + all_raw[i] + '/')
             list_parts.sort(key=lambda file: int(file.split('p')[-1]))
@@ -77,7 +77,7 @@ for i in range(starting_point,len(all_raw)):      # if 'current', ignore latest 
             if (final_part+1) >= 3:               # only process runs with at least 3 part files
                 runs_to_run.append(all_raw[i])
                 length_of_runs.append(final_part + 1)
-    elif run_ceiling == 'current':
+    elif str(run_ceiling) == 'current':
         if all_raw[i] not in all_pro and int(all_raw[i]) >= run_floor:
             list_parts = os.listdir('/pnfs/annie/persistent/raw/raw/' + all_raw[i] + '/')
             list_parts.sort(key=lambda file: int(file.split('p')[-1]))
