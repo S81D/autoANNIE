@@ -15,7 +15,7 @@ def trig_overlap(run):
     # does the run have an overlap tar file?
     exists = os.path.isfile('/pnfs/annie/persistent/processed/trigoverlap/R' + run + '_TrigOverlap.tar.gz')
     if exists == False:
-        print('No trigoverlap tar file found in /persistent for ' + run + ', producing trig overlap files now...\n')
+        print('\nNo trigoverlap tar file found in /persistent for ' + run + ', producing trig overlap files now...\n')
         os.system('sh run_trig.sh')
     else:
         print('Trigoverlap file present in /persistent for ' + run + ', moving on...\n')
