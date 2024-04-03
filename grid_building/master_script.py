@@ -14,9 +14,9 @@
 
 
 # Grid job specifications:
-# -- lifetime: 1hr  (for event building and BC)
+# -- lifetime: 1hr  (for event building)    2hr (BC)
 # -- memory: 2GB (event building)  1GB (BC)
-# -- disk: varies depending on number of part files, but typically between 5 and 10GB (event building)   5GB for BC
+# -- disk: varies depending on number of part files, but typically between 5 and 10GB (event building)   10GB for BC
 
 #########################################################################################
 import sys, os
