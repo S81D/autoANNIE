@@ -15,7 +15,7 @@ OUTPUT_FOLDER=/pnfs/annie/scratch/users/doran/output/beamcluster/auto/${RUN}
 mkdir -p $OUTPUT_FOLDER                                                 
 
 # wrapper script to submit your grid job
-jobsub_submit --memory=1000MB --expected-lifetime=1h -G annie --disk=5GB --resource-provides=usage_model=OFFSITE --site=Colorado,BNL,Caltech,Nebraska,SU-OG,UCSD,NotreDame,MIT,Michigan,MWT2,UChicago,Hyak_CE -f ${INPUT_PATH}/ProcessedRawData_R${RUN}.tar.gz -f ${INPUT_PATH}/run_container_job.sh -f ${INPUT_PATH}/BC.tar.gz -d OUTPUT $OUTPUT_FOLDER file://${INPUT_PATH}/grid_job.sh BC_${RUN} ${PI} ${PF}
+jobsub_submit --memory=1000MB --expected-lifetime=2h -G annie --disk=10GB --resource-provides=usage_model=OFFSITE --site=Colorado,BNL,Caltech,Nebraska,SU-OG,UCSD,NotreDame,MIT,Michigan,MWT2,UChicago,Hyak_CE -f ${INPUT_PATH}/ProcessedRawData_R${RUN}.tar.gz -f ${INPUT_PATH}/run_container_job.sh -f ${INPUT_PATH}/BC.tar.gz -d OUTPUT $OUTPUT_FOLDER file://${INPUT_PATH}/grid_job.sh BC_${RUN} ${PI} ${PF}
 
 echo "job name is: BC_${RUN} ${PI} ${PF}"
 echo ""
