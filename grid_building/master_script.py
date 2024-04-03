@@ -201,7 +201,7 @@ print('- - - - - - - - - - - - - - - - - - - - - - - - - - - - - -')
 os.system('ls')
 time.sleep(5)
 
-while complete_BC != len(resubs):
+while complete_BC != len(BC_resubs):
 
     BC_active_jobs, BC_which_runs, BC_check = helper_script.my_jobs_BC(runs_to_run)
 
@@ -234,7 +234,7 @@ while complete_BC != len(resubs):
                 BC_resubs[i] = -1
 
         # no active jobs but re-submitted (get 1 resubmission)
-        elif BC_check[i] == True and BC_resubs[i] == 1:
+        elif BC_check[i] == True and BC_resubs[i] < 2:
             
             present = helper_script.check_root(runs_to_run[i],n_jobs,'scratch')
 
