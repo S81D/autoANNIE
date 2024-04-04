@@ -234,7 +234,7 @@ while complete_BC != len(BC_resubs):
                 BC_resubs[i] = -1
 
         # no active jobs but re-submitted (get 1 resubmission)
-        elif BC_check[i] == True and BC_resubs[i] < 2:
+        elif BC_check[i] == True and BC_resubs[i] == 1:
             
             present = helper_script.check_root(runs_to_run[i],n_jobs,'scratch')
 
@@ -260,10 +260,11 @@ while complete_BC != len(BC_resubs):
             present = helper_script.check_root(runs_to_run[i],n_jobs,'persistent')
             if present == False:
                 os.system('sh BC_copy.sh ' + runs_to_run[i])
-                complete_BC += 1
+                check_count_BC += 1
             else:
                 print('\nRun ' + runs_to_run[i] + ' already transferred\n')
                 check_count_BC += 1
+                complete_BC += 1
 
 
         else:   # still running
@@ -271,7 +272,7 @@ while complete_BC != len(BC_resubs):
 
 
     if check_count_BC == len(BC_check):
-        helper_script.wait(10)     # wait 10 minutes
+        helper_script.wait(5)     # wait 5 minutes
 
 
 # BC files are transferred here: /pnfs/annie/persistent/processed/BeamClusterTrees/auto
