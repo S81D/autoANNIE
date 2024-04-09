@@ -243,7 +243,7 @@ while complete_BC != len(BC_resubs):
                 time.sleep(1)
                 # again, just resubmit all of them
                 for j in range(n_jobs):
-                    os.system('sh submit_grid_job.sh ' + runs_to_run[i] + ' ' + parts_i[i] + ' ' + parts_f[i])
+                    os.system('sh submit_grid_job.sh ' + runs_to_run[i] + ' ' + parts_i[j] + ' ' + parts_f[j])
                     time.sleep(1)
                 BC_resubs[i] += 1
             else:
