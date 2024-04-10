@@ -163,7 +163,7 @@ while complete != len(resubs):
                 resubs[i] += 1
             else:                   # if there aren't any missing files, transfer
                 if resubs[i] != -1:
-                    print('\n\nRun ' + runs_to_run[i] + ' is done! It was resubmitted ' + str(resubs[i]) + ' times. Initiating transfer...\n')
+                    print('\n\nRun ' + runs_to_run[i] + ' is done! It was resubmitted ' + str(resubs[i]) + ' time(s). Initiating transfer...\n')
                     os.system('sh copy_grid_output.sh ' + runs_to_run[i])
                     time.sleep(1)
                     helper_script.missing_after_transfer(runs_to_run[i])
