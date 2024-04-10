@@ -261,10 +261,10 @@ while complete_BC != len(BC_resubs):
             if present == False:
                 os.system('sh BC_copy.sh ' + runs_to_run[i])
                 check_count_BC += 1
+                complete_BC += 1
             else:
                 print('\nRun ' + runs_to_run[i] + ' already transferred\n')
                 check_count_BC += 1
-                complete_BC += 1
 
 
         else:   # still running
