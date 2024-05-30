@@ -5,6 +5,18 @@ import time
 # Some helpful functions to call for the automated event building #
 
 
+# Ask user for runs you would like to include
+def get_runs_from_user():
+    runs = []
+    print("Enter the runs you want to include. Type 'done' when you are finished:")
+    while True:
+        user_input = input("Enter run number: ")
+        if user_input.lower() == 'done':
+            break
+        runs.append(user_input)
+    return runs
+    
+
 # Produce trigoverlap files for event building
 def trig_overlap(run):
 
