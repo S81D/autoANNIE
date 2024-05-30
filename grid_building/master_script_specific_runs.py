@@ -34,8 +34,8 @@ print(usage_verbose, '\n')
 
 
 # user provided arguments
-step_size = int(input('Please specify the step size (12 is recommended):     '))
-resub_step_size = int(input('Please specify the step size of resubmission jobs (3 is recommended):    '))
+step_size = int(input('Please specify the job part file size (12 is recommended):     '))
+resub_step_size = int(input('Please specify the part file size of re-submission jobs (3 is recommended):    '))
 runs_to_run = helper_script.get_runs_from_user()
 
 # -------------------------------------------------------------
