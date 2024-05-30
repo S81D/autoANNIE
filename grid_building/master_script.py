@@ -3,6 +3,7 @@
 # Author: Steven Doran
 # Date: March 2024
 
+usage_verbose = """
 #########################################################################################
 # Usage: python3 master_script.py --run_ceiling --run_floor --step_size --resub_step_size
 
@@ -19,14 +20,19 @@
 # -- disk: varies depending on number of part files, but typically between 5 and 10GB (event building)   10GB for BC
 
 #########################################################################################
+"""
+
 import sys, os
 import time
 import helper_script
 
-run_ceiling = sys.argv[1]
-run_floor = int(sys.argv[2])
-step_size = int(sys.argv[3])
-resub_step_size = int(sys.argv[4])
+print('\n')
+print(usage_verbose, '\n')
+
+run_ceiling = input('Run ceiling (earliest run):    ')
+run_floor = int(input('Run floor (furthest back run):    '))
+step_size = int(input('Job part file size:    '))
+resub_step_size = int(input('Job re-submission part file size:    '))
 
 # -------------------------------------------------------------
 print('\n---------------------------------------------------')
