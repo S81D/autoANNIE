@@ -46,6 +46,11 @@ time.sleep(3)
 
 print('\nChecking available runs...')
 
+# - - - - - - - - - - - - - - - - - - -
+# If your SSH connection breaks or some other error is encountered (or you just want to build the BeamCluster root files),
+# You can uncomment sections of the code so it will skip the event building stage and only build runs you want
+# - - - - - - - - - - - - - - - - - - -
+
 #''' # uncomment to only submit BC jobs
 
 # give us the available runs
