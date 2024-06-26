@@ -77,8 +77,8 @@ usage_verbose = """
 
 
 # Grid job specifications:
-# -- lifetime: 2hr  (for event building)    2hr (BC)
-# -- memory: 2GB (event building)  1GB (BC)
+# -- lifetime: 4hr  (for event building)    2hr (BC)
+# -- memory: 4GB (event building)  2GB (BC)
 # -- disk: varies depending on number of part files, but typically between 5 and 10GB (event building)   10GB for BC
 
 #########################################################################################
@@ -88,8 +88,8 @@ print(usage_verbose, '\n')
 
 # user provided arguments
 DLS = input('Please specify if this run was taken during Daylight Savings (1 if yes, 0 if no):     ')
-step_size = int(input('Please specify the job part file size (10 is recommended):     '))
-resub_step_size = int(input('Please specify the part file size of re-submission jobs (3 is recommended):    '))
+step_size = int(input('Please specify the job part file size (5 is recommended):     '))
+resub_step_size = int(input('Please specify the part file size of re-submission jobs (1 is recommended):    '))
 runs_to_run = helper_script.get_runs_from_user()
 
 # -------------------------------------------------------------
