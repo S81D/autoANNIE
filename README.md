@@ -1,6 +1,22 @@
 # autoANNIE
 
-Scripts to automatically submit and re-submit jobs to the grid, used to event build and process data into ntuples for analysis. Jobs will submit a tar-ball of ToolAnalysis (https://github.com/ANNIEsoft/ToolAnalysis) to execute the ```EventBuilder``` toolchain and deposit the job output to ```/pnfs/annie/scratch/users/<user>/```. Once part files have been processed, the script will automatically move the data to ```/pnfs/annie/persistent``` and submit jobs to compile that data into easy-to-analyze ntuples by using the ```BeamClusterAnalysis``` toolchain. These ntuples are also moved to ```/pnfs/annie/persistent``` upon completion.
+Scripts to Event build on the grid.
+
+-----------------------
+
+### Usage:
+
+1. After cloning a copy of this repo to your user directory in ```/pnfs/annie/scratch/users/<doran>/```, make the following changes to ToolAnalysis before tar-balling:
+   - Ensure ```CreateMyList.sh``` is present in the ```PreProcessTrigOverlap``` toolchain config directory (used for generating the list file)
+   - Remove ```MRDDataDecoder``` in the ```EventBuilderV2``` toolchain.
+   - Remove ```my_files.txt``` from both the ```LAPPD_EB``` and ```EventBuilderV2``` toolchains.
+2. Tar your ToolAnalysis directory via: ```tar -czvf <tarball_name>.tar.gz -C /<path_to_user_directory> <ToolAnalysis_folder>```
+3. Copy this tar-ball to your scratch user directory (```/pnfs/annie/scratch/users/<doran>/```).
+4. Edit ```master_script.py``` to reflect your username, the bind mounted folders you are using when entering the singularity container, and other paths.
+4. Run the the master script: ```python3 master_script.py```
+   - Provide the necessary user inputs
+
+-----------------------
 
 An event building guide using ToolAnalysis can be found here: https://cdcvs.fnal.gov/redmine/projects/annie_experiment/wiki/Event_Building_with_ToolAnalysis
 
