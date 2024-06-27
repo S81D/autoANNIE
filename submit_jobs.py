@@ -60,6 +60,8 @@ def grid_job(run, user, input_path, TA_tar_name, name_TA):
     file.write('DUMMY_OUTPUT_FILE=${CONDOR_DIR_OUTPUT}/${JOBSUBJOBID}_dummy_output \n')
     file.write('touch ${DUMMY_OUTPUT_FILE} \n')
     file.write('echo "This dummy file belongs to job ${PART_NAME}" >> ${DUMMY_OUTPUT_FILE} \n')
+    file.write('start_time=$(date +%s)   # start time in seconds \n')
+    file.write('echo "The job started at: $(date)" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('echo "" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('\n')
 
@@ -128,6 +130,14 @@ def grid_job(run, user, input_path, TA_tar_name, name_TA):
     file.write('echo "Any remaining contents?" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('ls -v /srv >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('echo "" >> ${DUMMY_OUTPUT_FILE} \n')
+
+    file.write('\n')
+    file.write('end_time=$(date +%s) \n')
+    file.write('echo "Job ended at: $(date)" >> ${DUMMY_OUTPUT_FILE} \n')
+    file.write('echo "" >> ${DUMMY_OUTPUT_FILE} \n')
+    file.write('duration=$((end_time - start_time)) \n')
+    file.write('echo "Script duration (s): ${duration}" >> ${DUMMY_OUTPUT_FILE} \n')
+    file.write('\n')
     
     file.write('### END ###')
 
