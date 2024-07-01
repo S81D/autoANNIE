@@ -68,11 +68,10 @@ print('\n')
 
 usage_verbose = """
 #########################################################################################
-# Usage: python3 master_script_specific_runs.py --DLS --step_size --resub_step_size --runs_to_run
+# Usage: python3 master_script_specific_runs.py --DLS --step_size --runs_to_run
 
 # DLS = Enter 1 if building runs that occured during Daylight Savings, 0 if not - this is only relevant for the MRD
 # step_size = number of part files per job for event building
-# resub_step_size = number of part files per job for resubmitting event building jobs (last two are sensitive to run type)
 # runs_to_run = runs you would like to event build. It will ask you to enter one at a time
 
 
@@ -89,7 +88,7 @@ print(usage_verbose, '\n')
 # user provided arguments
 DLS = input('Please specify if this run was taken during Daylight Savings (1 if yes, 0 if no):     ')
 step_size = int(input('Please specify the job part file size (5 is recommended):     '))
-resub_step_size = int(input('Please specify the part file size of re-submission jobs (1 is recommended):    '))
+resub_step_size = 1    # not provided by user - manually set for resubmissions
 runs_to_run = helper_script.get_runs_from_user()
 
 # -------------------------------------------------------------
