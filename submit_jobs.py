@@ -41,7 +41,8 @@ def submit_grid_job(run, p_start, p_end, input_path, output_path, TA_tar_name, d
     else:
         grid_job = 'grid_job_' + run + '.sh'
         container_job = 'run_container_job_' + run + '.sh'
-    
+
+    file.write('-f ${INPUT_PATH}/' + container_job + ' ')
     file.write('-f ${INPUT_PATH}/' + TA_tar_name + ' ')
     file.write('-f ' + trig_path + 'R' + run + '_TrigOverlap.tar.gz ')
     file.write('-f ' + beamfetcher_path + 'beamfetcher_' + run + '.root ')
