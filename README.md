@@ -8,7 +8,6 @@ Scripts to Event build on the grid.
 
 1. After cloning a copy of this repo to your user directory in ```/pnfs/annie/scratch/users/<doran>/```, make the following changes to ToolAnalysis before tar-balling:
    - Ensure ```CreateMyList.sh``` is present in the ```PreProcessTrigOverlap``` toolchain config directory (used for generating the list file)
-   - Remove ```MRDDataDecoder``` in the ```EventBuilderV2``` toolchain.
    - Remove ```my_files.txt``` from both the ```LAPPD_EB``` and ```EventBuilderV2``` toolchains.
 2. Tar your ToolAnalysis directory via: ```tar -czvf <tarball_name>.tar.gz -C /<path_to_user_directory> <ToolAnalysis_folder>```
 3. Copy this tar-ball to your scratch user directory (```/pnfs/annie/scratch/users/<doran>/```).
