@@ -28,8 +28,6 @@ final_part = int(last_file.split('p')[-1])
 # normal event building (initial submission, not a re-run of missing files)
 
 if missing == 'n':
-        
-    process_all = True
 
     first_part = int(0)
     last_part = final_part
