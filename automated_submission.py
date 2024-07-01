@@ -86,7 +86,7 @@ if missing == 'n':
         submit_jobs.submit_grid_job(run, part_list[0][i], part_list[1][i], input_path, output_path, TA_tar_name, disk_space, raw_path, trig_path, beamfetcher_path, first, final)
 
         # Lastly, we can execute the job submission script and send the job to the grid
-        os.system('sh submit_grid_job_' + run + '.sh')
+        os.system('sh ' + sh_name)
         print('\n# # # # # # # # # # # # # # # # # # # # #')
         print('Run ' + run + ' p' + str(part_list[0][i]) + '-' + str(part_list[1][i]) + ' sent')
         print('# # # # # # # # # # # # # # # # # # # # #\n')
@@ -96,7 +96,7 @@ if missing == 'n':
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
-# re-submit jobs that failed
+# re-submit jobs that failed (resub step size set to 1)
 
 if missing == 'y':
     
@@ -119,6 +119,8 @@ if missing == 'y':
         expected_processed_file = "ProcessedData_PMTMRDLAPPD_R" + file[8:]  # Remove "RAWDataR" prefix
         if expected_processed_file not in processed_files:
             missing_files.append(int(expected_processed_file[34:]))
+
+    missing_files.sort()   # put in numerical order
 
     print("\nNumber of raw files: ", num_raw_files)
     print("Number of processed files: ", num_processed_files)
@@ -159,10 +161,10 @@ if missing == 'y':
     os.system('rm grid_job_' + run + '*.sh'); os.system('rm run_container_job_' + run + '*.sh'); os.system('rm submit_grid_job_' + run + '*.sh')
     for i in range(len(part_list[0])):     # loop over number of jobs
 
-        if part_list[0][i] == 0:               # p0
+        if i == 0 and part_list[0][i] == 0:      # p0 and first job
             first = True
             sh_name = 'submit_grid_job_' + run + '_first.sh'
-        elif part_list[0][i+1] == final_part:  # final part of the run
+        elif (part_list[0][i]+1) == final_part:  # final part of the run
             final = True
             sh_name = 'submit_grid_job_' + run + '_final.sh'
         else:
@@ -170,17 +172,19 @@ if missing == 'y':
             os.system('rm grid_job_' + run + '.sh'); os.system('rm run_container_job_' + run + '.sh'); os.system('rm submit_grid_job_' + run + '.sh')
         
         # create the run_container_job and grid_job scripts
-        submit_jobs.grid_job(run, user, input_path, TA_tar_name, name_TA, first, final)
+        submit_jobs.grid_job(run, user, TA_tar_name, name_TA, first, final)
         submit_jobs.run_container_job(run, name_TA, DLS, first, final)
 
         # We can then create the job_submit script that will send our job (with files) to the grid
         submit_jobs.submit_grid_job(run, part_list[0][i], part_list[1][i], input_path, output_path, TA_tar_name, disk_space, raw_path, trig_path, beamfetcher_path, first, final)
 
         # Lastly, we can execute the job submission script and send the job to the grid
-        os.system('sh submit_grid_job_' + run + '.sh')
+        os.system('sh ' + sh_name)
         print('\n# # # # # # # # # # # # # # # # # # # # #')
         print('Run ' + run + ' p' + str(part_list[0][i]) + '-' + str(part_list[1][i]) + ' sent')
         print('# # # # # # # # # # # # # # # # # # # # #\n')
+
+        first = False; final = False 
 
 
 print('\nJobs successfully submitted!\n')
