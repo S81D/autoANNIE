@@ -4,9 +4,20 @@ import sys
 
 
 # this script is for actually submitting the job to the FermiGrid
-def submit_grid_job(run, p_start, p_end, input_path, output_path, TA_tar_name, disk_space, raw_path, trig_path, beamfetcher_path):
+def submit_grid_job(run, p_start, p_end, input_path, output_path, TA_tar_name, disk_space, raw_path, trig_path, beamfetcher_path, first, final):
     
-    file = open('submit_grid_job_' + run + '.sh', "w")
+    if first == True and final == True:
+        file = open('submit_grid_job_' + run + '.sh', "w")
+        logic_option = 1
+    elif first == True:
+        file = open('submit_grid_job_' + run + '_first.sh', "w")
+        logic_option = 2
+    elif final == True:
+        file = open('submit_grid_job_' + run + '_final.sh', "w")
+        logic_option = 3
+    else:
+        file = open('submit_grid_job_' + run + '.sh', "w")
+        logic_option = 1
 
     file.write('export INPUT_PATH=' + input_path +  '\n')
     file.write('export RAWDATA_PATH=' + raw_path + run + '/ \n')
@@ -21,21 +32,41 @@ def submit_grid_job(run, p_start, p_end, input_path, output_path, TA_tar_name, d
     for i in range(int(p_start), int(p_end)+1):
         file.write('-f ${RAWDATA_PATH}/RAWDataR' + run + 'S0p' + str(i) + ' ')
 
-    file.write('-f ${INPUT_PATH}/run_container_job_' + run + '.sh ')
+    if logic_option == 2:
+        grid_job = 'grid_job_' + run + '_first.sh'
+        container_job = 'run_container_job_' + run + '_first.sh'
+    elif logic_option == 3:
+        grid_job = 'grid_job_' + run + '_final.sh'
+        container_job = 'run_container_job_' + run + '_final.sh'
+    else:
+        grid_job = 'grid_job_' + run + '.sh'
+        container_job = 'run_container_job_' + run + '.sh'
+    
     file.write('-f ${INPUT_PATH}/' + TA_tar_name + ' ')
     file.write('-f ' + trig_path + 'R' + run + '_TrigOverlap.tar.gz ')
     file.write('-f ' + beamfetcher_path + 'beamfetcher_' + run + '.root ')
     file.write('-d OUTPUT $OUTPUT_FOLDER ')
-    file.write('file://${INPUT_PATH}/grid_job_' + run + '.sh ' + run + '_' + str(p_start) + '_' + str(p_end) + '\n')
+    file.write('file://${INPUT_PATH}/' + grid_job + ' ' + run + '_' + str(p_start) + '_' + str(p_end) + '\n')
     file.close()
 
     return
 
 
 # this next script executes on the grid node
-def grid_job(run, user, input_path, TA_tar_name, name_TA):
+def grid_job(run, user, TA_tar_name, name_TA, first, final):
 
-    file = open(input_path + 'grid_job_' + run + '.sh', "w")
+    if first == True and final == True:
+        file = open('grid_job_' + run + '.sh', "w")
+        logic_option = 1
+    elif first == True:
+        file = open('grid_job_' + run + '_first.sh', "w")
+        logic_option = 2
+    elif final == True:
+        file = open('grid_job_' + run + '_final.sh', "w")
+        logic_option = 3
+    else:
+        file = open('grid_job_' + run + '.sh', "w")
+        logic_option = 1
 
     file.write('#!/bin/bash \n')
     file.write('# Steven Doran \n')
@@ -62,6 +93,11 @@ def grid_job(run, user, input_path, TA_tar_name, name_TA):
     file.write('echo "This dummy file belongs to job ${PART_NAME}" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('start_time=$(date +%s)   # start time in seconds \n')
     file.write('echo "The job started at: $(date)" >> ${DUMMY_OUTPUT_FILE} \n')
+    file.write('echo "" >> ${DUMMY_OUTPUT_FILE} \n')
+    file.write('\n')
+
+    file.write('echo "Files present in CONDOR_INPUT:" >> ${DUMMY_OUTPUT_FILE} \n')
+    file.write('ls -lrth $CONDOR_DIR_INPUT >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('echo "" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('\n')
 
@@ -93,16 +129,30 @@ def grid_job(run, user, input_path, TA_tar_name, name_TA):
     file.write('\n')
 
     file.write('# Setup singularity container \n')
-    file.write('singularity exec -B/srv:/srv /cvmfs/singularity.opensciencegrid.org/anniesoft/toolanalysis\:latest/ $CONDOR_DIR_INPUT/run_container_job_' + run + '.sh $PART_NAME \n')
+    if logic_option == 2:
+        container_job = 'run_container_job_' + run + '_first.sh'
+    elif logic_option == 3:
+        container_job = 'run_container_job_' + run + '_final.sh'
+    else:
+        container_job = 'run_container_job_' + run + '.sh'
+
+    file.write('result=$(singularity exec -B/srv:/srv /cvmfs/singularity.opensciencegrid.org/anniesoft/toolanalysis\:latest/ $CONDOR_DIR_INPUT/' + container_job + ' $PART_NAME) \n')
     file.write('\n')
 
     file.write('echo "Moving the output files to CONDOR OUTPUT..." >> ${DUMMY_OUTPUT_FILE} \n')
+    file.write('echo "" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('\n')
 
-    file.write('${JSB_TMP}/ifdh.sh cp -D /srv/logfile* $CONDOR_DIR_OUTPUT \n')
-    file.write('${JSB_TMP}/ifdh.sh cp -D /srv/Processed* $CONDOR_DIR_OUTPUT \n')
-    file.write('${JSB_TMP}/ifdh.sh cp -D /srv/LAPPDTree*.root $CONDOR_DIR_OUTPUT \n')
-    file.write('${JSB_TMP}/ifdh.sh cp -D /srv/offsetFitResult*.root $CONDOR_DIR_OUTPUT \n')
+    file.write('if [ "$result" = "True" ]; then \n')
+    file.write('    echo "Processed = Raw, transferring to CONDOR_DIR_OUTPUT" >> ${DUMMY_OUTPUT_FILE} \n')
+    file.write('    ${JSB_TMP}/ifdh.sh cp -D /srv/logfile* $CONDOR_DIR_OUTPUT \n')
+    file.write('    ${JSB_TMP}/ifdh.sh cp -D /srv/Processed* $CONDOR_DIR_OUTPUT \n')
+    file.write('    ${JSB_TMP}/ifdh.sh cp -D /srv/LAPPDTree*.root $CONDOR_DIR_OUTPUT \n')
+    file.write('    ${JSB_TMP}/ifdh.sh cp -D /srv/offsetFitResult*.root $CONDOR_DIR_OUTPUT \n')
+    file.write('else \n')
+    file.write('    echo "Processed != Raw, transferring logfiles to CONDOR_DIR_OUTPUT, BUT NOT TRANSFERRING PROCESSED OR LAPPD FILES" >> ${DUMMY_OUTPUT_FILE} \n')
+    file.write('    ${JSB_TMP}/ifdh.sh cp -D /srv/logfile* $CONDOR_DIR_OUTPUT \n')
+    file.write('fi \n')
     file.write('\n')
 
     file.write('echo "" >> ${DUMMY_OUTPUT_FILE} \n')
@@ -147,9 +197,27 @@ def grid_job(run, user, input_path, TA_tar_name, name_TA):
 
 
 # third script actually executes the ToolChains once in the singularity environment
-def run_container_job(run, name_TA, DLS):
+def run_container_job(run, name_TA, DLS, first, final):
 
-    file = open('run_container_job_' + run + '.sh', "w")
+    # must be a small run with all part files contained in a single job
+    if first == True and final == True:
+        file = open('run_container_job_' + run + '.sh', "w")
+        logic_option = 1
+
+    # contains the first part file
+    elif first == True:
+        file = open('run_container_job_' + run + '_first.sh', "w")
+        logic_option = 2
+    
+    # contains the final part file
+    elif final == True:
+        file = open('run_container_job_' + run + '_final.sh', "w")
+        logic_option = 3
+
+    # contains neither (middle part files)
+    else:
+        file = open('run_container_job_' + run + '.sh', "w")
+        logic_option = 1    # same result as if both are contained
 
     file.write('#!/bin/bash \n')
     file.write('# Steven Doran \n')
@@ -203,11 +271,8 @@ def run_container_job(run, name_TA, DLS):
     file.write('\n')
 
     # Create DaylightSavings Config for MRD
-    file.write('# create DLS config for MRD \n')
-    file.write('echo "verbosity 0" >> configfiles/EventBuilderV2/MRDDataDecoderConfig \n')
-    file.write('echo "DaylightSavingsSpring ' + DLS + '" >> configfiles/EventBuilderV2/MRDDataDecoderConfig \n')
-    file.write('\n')
-    file.write('# Daylight Savings? (MRDDataDecoder config file) \n')
+    file.write('# append MRDDataDecoder for DLS \n')
+    file.write("sed -i '$ s/.*/DaylightSavingsSpring " + DLS + "/' configfiles/EventBuilderV2/MRDDataDecoderConfig \n")
     file.write('echo "MRDDataDecoderConfig (DLS ' + DLS + ' was selected)" >> /srv/logfile_${PART_NAME}.txt \n')
     file.write('cat configfiles/EventBuilderV2/MRDDataDecoderConfig >> /srv/logfile_${PART_NAME}.txt \n')
     file.write('echo "" >>/srv/logfile_${PART_NAME}.txt \n')
@@ -232,7 +297,6 @@ def run_container_job(run, name_TA, DLS):
 
     # this toolchain produces an LAPPDTree.root file
     file.write('# Get LAPPD timing information (LAPPD_EB toolchain) \n')
-    # 2>&1 redirects the stderr to the same place as stdout, which is the logfile
     file.write('./Analyse configfiles/LAPPD_EB/ToolChainConfig  >> /srv/logfile_LAPPD_${PART_NAME}.txt 2>&1 \n')      # execute lappd timing info toolchain
     file.write('\n')
 
@@ -245,15 +309,65 @@ def run_container_job(run, name_TA, DLS):
     file.write('\n')
     
     file.write('pwd >> /srv/logfile_${PART_NAME}.txt \n')
-    file.write('echo "" >>/srv/logfile_${PART_NAME}.txt \n')
+    file.write('echo "" >> /srv/logfile_${PART_NAME}.txt \n')
     file.write('echo "Contents of TA after toolchain:" >> /srv/logfile_${PART_NAME}.txt \n')
     file.write('ls -lrth >> /srv/logfile_${PART_NAME}.txt \n')
-    file.write('echo "" >>/srv/logfile_${PART_NAME}.txt \n')
+    file.write('echo "" >> /srv/logfile_${PART_NAME}.txt \n')
     file.write('\n')
     file.write('echo "Copying output files... ending script..." >> /srv/logfile_${PART_NAME}.txt \n')
+    file.write('echo "" >> /srv/logfile_${PART_NAME}.txt \n')
+    file.write('\n')
 
+    file.write('# ------------------------ #\n')
+    # We need to remove "overlap" Processed files
     file.write('# copy any produced files \n')
-    file.write('cp Processed* /srv/ \n')
+    file.write('\n')
+
+    # 1. Count how many RAWData files were copied to /srv/
+    file.write('raw_count=$(ls /srv/RAWData* | wc -l) \n')
+    file.write('echo "There were $raw_count RAWData files present" >> /srv/logfile_${PART_NAME}.txt \n')
+
+    # 2. Count how many Processed files are present/were produced
+    file.write('pro_count=$(ls ProcessedData* | wc -l) \n')
+    file.write('echo "There are $pro_count ProcessedData files present" >> /srv/logfile_${PART_NAME}.txt \n')
+    file.write('echo "" >> /srv/logfile_${PART_NAME}.txt \n')
+    file.write('\n')
+
+    # 3. If Processed != Raw, at least one part file failed for whatever reason --> do not copy processed files (or LAPPD files) to srv/
+    #    If Processed == Raw, proceed with clipping the overlap and copying
+    file.write('if [ "$pro_count" -ne "$raw_count" ]; then\n')
+    file.write('    echo "Mismatch detected: Processed files NOT to be copied" >> /srv/logfile_${PART_NAME}.txt\n')
+    file.write('    echo "False" \n')      # passes this up the chain the grid_job.sh
+    file.write('else\n')
+    file.write('    echo "Counts match: Files to be copied to normal output" >> /srv/logfile_${PART_NAME}.txt\n')
+    file.write('    echo "True" \n')      
+    file.write('fi\n')
+
+    file.write('\n')
+    file.write('echo "" >> /srv/logfile_${PART_NAME}.txt \n')
+    if logic_option == 2:    # first job
+        file.write('echo "This is the first job! Clipping the final part file in the job..." >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write("FILES=$(ls Processed* | sort -V | sed '$d')\n")
+        file.write('cp $FILES /srv/ \n')
+        file.write('echo "" >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write('echo "Files to be copied:" >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write('echo $FILES >> /srv/logfile_${PART_NAME}.txt \n')
+    elif logic_option == 3:  # final job
+        file.write('echo "This is the final job! Clipping the first part file in the job..." >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write("FILES=$(ls Processed* | sort -V | sed '1d')\n")
+        file.write('cp $FILES /srv/ \n')
+        file.write('echo "" >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write('echo "Files to be copied:" >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write('echo $FILES >> /srv/logfile_${PART_NAME}.txt \n')
+    else:                    # middle jobs
+        file.write('echo "Clipping both the first and final part files in the job..." >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write("FILES=$(ls Processed* | sort -V | sed '1d;$d')\n")
+        file.write('cp $FILES /srv/ \n')
+        file.write('echo "" >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write('echo "Files to be copied:" >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write('echo $FILES >> /srv/logfile_${PART_NAME}.txt \n')
+    
+    file.write('\n')
     file.write('cp LAPPDTree.root /srv/LAPPDTree_${PART_NAME}.root \n')
     file.write('cp offsetFitResult.root /srv/offsetFitResult_${PART_NAME}.root \n')
     file.write('\n')
