@@ -163,7 +163,7 @@ for i in range(len(runs_to_run)):
         os.system('python3 automated_submission.py ' + user + ' ' + runs_to_run[i] + ' n ' + str(small_step) + ' ' + DLS + ' ' + TA_tar_name + ' ' + TA_folder + ' ' + scratch_path + ' ' + output_path + ' ' + raw_path + ' ' + trig_path + ' ' + beamfetcher_path)   # no re-run
         time.sleep(3)
     else:
-        print('\n' + runs_to_run[i] + ' processed files present in /scratch, not submitting this run in first batch...')
+        print('\n' + runs_to_run[i] + ' processed files present in /scratch, not submitting this run in first batch...\n')
 
 print('\nAll initial jobs submitted\n')
 time.sleep(1)
