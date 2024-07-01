@@ -77,7 +77,7 @@ usage_verbose = """
 
 
 # Grid job specifications:
-# -- lifetime: 4hr  (for event building)    2hr (BC)
+# -- lifetime: 4hr  (for event building)    4hr (BC)
 # -- memory: 4GB (event building)  2GB (BC)
 # -- disk: varies depending on number of part files, but typically between 5 and 10GB (event building)   10GB for BC
 
