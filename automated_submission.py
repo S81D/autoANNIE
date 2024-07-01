@@ -55,21 +55,36 @@ if missing == 'n':
 
     # calculate disk space requirements
     import math
-    disk_space = str(math.ceil(4 + 2.5 + .25*step_size + .15*step_size))    # refined for beam runs based on job histories
+    disk_space = str(math.ceil(5 + .3*(step_size+2)))    # refined for beam runs based on job histories
     #disk_space = str(10)     # typically fine as a default for jobs with less than ~8 part files or so
 
     # Submit the entire batch through multiple jobs, based on the user input (above)
 
+    first = False; final = False
+    n_jobs = len(part_list[0])
+
+    os.system('rm grid_job_' + run + '*.sh'); os.system('rm run_container_job_' + run + '*.sh'); os.system('rm submit_grid_job_' + run + '*.sh')
     for i in range(len(part_list[0])):     # loop over number of jobs
+
+        if i == 0:               # first job
+            first = True
+            sh_name = 'submit_grid_job_' + run + '_first.sh'
+        elif i == (n_jobs - 1):  # final job
+            final = True
+            sh_name = 'submit_grid_job_' + run + '_final.sh'
+        else:
+            sh_name = 'submit_grid_job_' + run + '.sh'
+            os.system('rm grid_job_' + run + '.sh'); os.system('rm run_container_job_' + run + '.sh'); os.system('rm submit_grid_job_' + run + '.sh')
+
+        if n_jobs == 1:    # handle weird cases of small runs with potentially only one job
+            first = True; final = True
+            sh_name = 'submit_grid_job_' + run + '.sh'
         
         # create the run_container_job and grid_job scripts
-        os.system('rm grid_job_' + run + '.sh')
-        submit_jobs.grid_job(run, user, input_path, TA_tar_name, name_TA)
-        os.system('rm run_container_job_' + run + '.sh')
-        submit_jobs.run_container_job(run, name_TA, DLS)
+        submit_jobs.grid_job(run, user, TA_tar_name, name_TA, first, final)
+        submit_jobs.run_container_job(run, name_TA, DLS, first, final)
 
         # We can then create the job_submit script that will send our job (with files) to the grid
-        os.system('rm submit_grid_job_' + run + '.sh')
         submit_jobs.submit_grid_job(run, part_list[0][i], part_list[1][i], input_path, output_path, TA_tar_name, disk_space, raw_path, trig_path, beamfetcher_path)
 
         # Lastly, we can execute the job submission script and send the job to the grid
@@ -77,6 +92,8 @@ if missing == 'n':
         print('\n# # # # # # # # # # # # # # # # # # # # #')
         print('Run ' + run + ' p' + str(part_list[0][i]) + '-' + str(part_list[1][i]) + ' sent')
         print('# # # # # # # # # # # # # # # # # # # # #\n')
+
+        first = False; final = False
 
 
 
@@ -163,7 +180,7 @@ if missing == 'y':
 
         # calculate disk space requirements
         import math
-        disk_space = str(math.ceil(4 + 2.5 + .25*step_size + .15*step_size))    # refined for beam runs based on job histories
+        str(math.ceil(5 + .3*(step_size+2)))    # refined for beam runs based on job histories
         #disk_space = str(10)     # typically fine as a default - good for Laser single part submissions
 
         # Submit the entire batch through multiple jobs, based on the user input (above)
