@@ -133,19 +133,19 @@ if missing == 'y':
     last_part = max(missing_files)
 
     part_list = [[], []]     # [0] = first,  [1] = final
-    for i in range(first_part, last_part + 1, step_size):
+    for i in range(len(missing_files)):
             
-        if i != 0:
-            part_list[0].append(i-1)
+        if missing_files[i] != 0:
+            part_list[0].append(missing_files[i]-1)
         else:
-            part_list[0].append(i)
-        if (i+step_size) > last_part:
+            part_list[0].append(missing_files[i])
+        if (missing_files[i]+step_size) > last_part:
             if last_part < final_part:
                 part_list[1].append(last_part+1)
             else:
                 part_list[1].append(final_part)
         else:
-            part_list[1].append(i + step_size)
+            part_list[1].append(missing_files[i] + step_size)
 
 
     # calculate disk space requirements
