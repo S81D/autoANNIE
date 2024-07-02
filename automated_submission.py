@@ -150,7 +150,7 @@ if missing == 'y':
 
     # calculate disk space requirements
     import math
-    str(math.ceil(5 + .3*(step_size+2)))    # refined for beam runs based on job histories
+    disk_space = str(math.ceil(5 + .3*(step_size+2)))    # refined for beam runs based on job histories
     #disk_space = str(10)     # typically fine as a default - good for Laser single part submissions
 
     # Submit the entire batch through multiple jobs, based on the user input (above)
