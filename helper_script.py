@@ -227,7 +227,7 @@ def my_jobs_BC(submitted_runs, user):
     print('\nFetching active job list...')
     os.system('jobsub_q -G annie --user ' + user + ' >> current_jobs.txt')
     time.sleep(15)
-
+    
     with open('current_jobs.txt', 'r') as file:
         lines = file.readlines()[:-1]
 
@@ -298,17 +298,23 @@ def BC_breakup(run_number, data_path):
         return start_indices, end_indices      # lists of starting part file and ending part file
     
 
-# check for BC root files in /scratch output
-def check_root(run_number, required_count, which_one, output_path, beamcluster_path):
+# check for BC root files in /scratch
+def check_root_scratch(run_number,required_count,output_path):
 
-    if which_one == 'scratch':
-        output = output_path + "beamcluster/" + run_number + "/"
-    elif which_one == 'persistent':
-        output = beamcluster_path + "R" + run_number + "/"
+    file_path = output_path + run_number + '/'
 
-    if not os.path.exists(output):
+    if not os.path.exists(file_path):
         return False
 
-    root_files = [file for file in os.listdir(output) if file.endswith(".root")]
+    root_files = [file for file in os.listdir(file_path) if file.endswith(".ntuple.root")]
 
     return len(root_files) == required_count   # true if there are enough root files present
+
+
+# check for BC root file in /persistent
+def check_root_pro(run_number,output_path):
+
+    name_of_file = 'BeamCluster_' + run_number
+    file_path = os.path.join(output_path, f"{name_of_file}.ntuple.root")
+
+    return os.path.exists(file_path)
