@@ -7,16 +7,14 @@
 #include <TList.h>
 #include <TSystemFile.h>
 
-// Usage: root -l -q 'mergeBeamTrees.C("<directory_path>", <run_number>)'
-
 // Function to merge BeamTree trees
-void mergeBeamTrees(const std::string &directory, int runNumber) {
+void mergeBeamTrees(const std::string &directory, int runNumber, const std::string &file_name, const std::string &tree_name) {
     // Define the file directory based on the run number and output file name
     std::string runDirectory = directory + "/" + std::to_string(runNumber) + "/";
-    std::string outputFileName = "beamfetcher_" + std::to_string(runNumber) + ".root";
+    std::string outputFileName = file_name + "_" + std::to_string(runNumber) + ".root";
     
     // Create a TChain to merge BeamTree trees
-    TChain chain("BeamTree");
+    TChain chain(tree_name);
 
     // Create directory object
     TSystemDirectory dir(runDirectory.c_str(), runDirectory.c_str());
@@ -29,7 +27,7 @@ void mergeBeamTrees(const std::string &directory, int runNumber) {
         while ((file = (TSystemFile*)next())) {
             fname = file->GetName();
             // Check if the file name meets the criteria
-            if (!file->IsDirectory() && fname.BeginsWith("beamfetcher_") && fname.EndsWith(".root")) {
+            if (!file->IsDirectory() && fname.BeginsWith(file_name + "_") && fname.EndsWith(".root")) {
                 std::string filePath = runDirectory + fname.Data();
                 std::cout << "Adding file: " << filePath << std::endl;
                 chain.Add(filePath.c_str());
@@ -49,11 +47,11 @@ void mergeBeamTrees(const std::string &directory, int runNumber) {
 }
 
 // Wrapper function to merge BeamTree trees with provided directory path and run number
-void mergeBeamTreesWrapper(const std::string &directory, int runNumber) {
-    mergeBeamTrees(directory, runNumber);
+void mergeBeamTreesWrapper(const std::string &directory, int runNumber, const std::string &file_name, const std::string &tree_name) {
+    mergeBeamTrees(directory, runNumber, file_name, tree_name);
 }
 
 // Entry point for the ROOT macro
-void mergeBeamTrees(const char* dir, int runNumber) {
-    mergeBeamTreesWrapper(std::string(dir), runNumber);
+void mergeBeamTrees(const char* dir, int runNumber, const char* file_name, const char* tree_name) {
+    mergeBeamTreesWrapper(std::string(dir), runNumber, std::string(file_name), std::string(tree_name));
 }
