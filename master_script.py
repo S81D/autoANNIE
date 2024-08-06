@@ -293,104 +293,106 @@ if which_mode == '2':        # BeamCluster
     BC_resubs = [0 for i in range(len(runs_to_run))]
     complete_BC = 0
 
-    BC_active_jobs, BC_which_runs, BC_check = helper_script.my_jobs_BC(runs_to_run, user)
+    while complete_BC != len(BC_resubs):
 
-    check_count_BC = 0
-    for i in range(len(BC_check)):
-
-        # breaks the part files into 500 part sections
-        parts_i, parts_f = helper_script.BC_breakup(runs_to_run[i], data_path)
-        n_jobs = len(parts_i)
-        
-        # initial submission
-        if BC_check[i] == True and BC_resubs[i] == 0:
+        BC_active_jobs, BC_which_runs, BC_check = helper_script.my_jobs_BC(runs_to_run, user)
+    
+        check_count_BC = 0
+        for i in range(len(BC_check)):
+    
+            # breaks the part files into 500 part sections
+            parts_i, parts_f = helper_script.BC_breakup(runs_to_run[i], data_path)
+            n_jobs = len(parts_i)
             
-            # check if all root files are present
-            present = helper_script.check_root_scratch(runs_to_run[i],n_jobs,BC_scratch_output_path)
-            present_pro = helper_script.check_root_pro(runs_to_run[i],beamcluster_path)
-
-            # Couple of scenarios:
-
-            # 1. root file is present in processed - if this is the case we are done with this run
-            if present_pro == True:
-                print('\nRun ' + runs_to_run[i] + ' already present in /persistent --> skipping job submission and this run will not be transfered...\n')
-                BC_resubs[i] = -1
-
-
-            # 2. root file is not present in either processed or scratch, indicating it has never been produced.
-            #    if this is the case, submit the initial job
-            elif present == False and present_pro == False:
-                print('\nSubmitting BeamCluster job for Run ' + runs_to_run[i] + '...\n')
+            # initial submission
+            if BC_check[i] == True and BC_resubs[i] == 0:
                 
-                # produce processed file tar-ball
-                os.system('sh BeamCluster/tar_files.sh ' + runs_to_run[i] + ' ' + scratch_path + ' ' + data_path)
-                time.sleep(1)
-
-                for j in range(n_jobs):
-
-                    # create job submission scripts
-                    submit_jobs.submit_BC(scratch_path, BC_scratch_output_path, TA_tar_name)
-                    submit_jobs.grid_BC(user, TA_tar_name, TA_folder, scratch_path)
-                    submit_jobs.container_BC(TA_folder, scratch_path)
-
-                    os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + parts_i[j] + ' ' + parts_f[j])
-
+                # check if all root files are present
+                present = helper_script.check_root_scratch(runs_to_run[i],n_jobs,BC_scratch_output_path)
+                present_pro = helper_script.check_root_pro(runs_to_run[i],beamcluster_path)
+    
+                # Couple of scenarios:
+    
+                # 1. root file is present in processed - if this is the case we are done with this run
+                if present_pro == True:
+                    print('\nRun ' + runs_to_run[i] + ' already present in /persistent --> skipping job submission and this run will not be transfered...\n')
+                    BC_resubs[i] = -1
+    
+    
+                # 2. root file is not present in either processed or scratch, indicating it has never been produced.
+                #    if this is the case, submit the initial job
+                elif present == False and present_pro == False:
+                    print('\nSubmitting BeamCluster job for Run ' + runs_to_run[i] + '...\n')
+                    
+                    # produce processed file tar-ball
+                    os.system('sh BeamCluster/tar_files.sh ' + runs_to_run[i] + ' ' + scratch_path + ' ' + data_path)
                     time.sleep(1)
-
-                BC_resubs[i] += 1
-            
-            # 3. All root files are present in /scratch but not in /persistent
-            elif present_pro == False and present == True:         
-                print('\nall .root file(s) found in /scratch output for Run ' + runs_to_run[i] + ', skipping job submission\n')
-                BC_resubs[i] = -1
-
-        # no active jobs but re-submitted (get 1 resubmission)
-        elif BC_check[i] == True and BC_resubs[i] == 1:
-            
-            present = helper_script.check_root_scratch(runs_to_run[i],n_jobs,BC_scratch_output_path)
-
-            if present == False:
-                print('\nRe-submitting BeamCluster job for Run ' + runs_to_run[i] + '...\n')
-                time.sleep(1)
-                # again, just resubmit all of them
-                for j in range(n_jobs):
-                    os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + parts_i[j] + ' ' + parts_f[j])
+    
+                    for j in range(n_jobs):
+    
+                        # create job submission scripts
+                        submit_jobs.submit_BC(scratch_path, BC_scratch_output_path, TA_tar_name)
+                        submit_jobs.grid_BC(user, TA_tar_name, TA_folder, scratch_path)
+                        submit_jobs.container_BC(TA_folder, scratch_path)
+    
+                        os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + parts_i[j] + ' ' + parts_f[j])
+    
+                        time.sleep(1)
+    
+                    BC_resubs[i] += 1
+                
+                # 3. All root files are present in /scratch but not in /persistent
+                elif present_pro == False and present == True:         
+                    print('\nall .root file(s) found in /scratch output for Run ' + runs_to_run[i] + ', skipping job submission\n')
+                    BC_resubs[i] = -1
+    
+            # no active jobs but re-submitted (get 1 resubmission)
+            elif BC_check[i] == True and BC_resubs[i] == 1:
+                
+                present = helper_script.check_root_scratch(runs_to_run[i],n_jobs,BC_scratch_output_path)
+    
+                if present == False:
+                    print('\nRe-submitting BeamCluster job for Run ' + runs_to_run[i] + '...\n')
                     time.sleep(1)
-                BC_resubs[i] += 1
-            else:
-                print('\nBC job complete for Run ' + runs_to_run[i] + '\n')
-                BC_resubs[i] = -1
-
-        elif BC_check[i] == True and BC_resubs[i] == 2:    # no more jobs, but already re-submitted twice
-            print('\nMax re-submissions reached for run ' + runs_to_run[i] + ' for BC jobs! Will not transfer to /persistent\n')
-            complete_BC += 1
-
-        
-        # actually complete, transfer
-        elif BC_resubs[i] == -1:
-            present = helper_script.check_root_pro(runs_to_run[i],beamcluster_path)
-            if present == False:
-
-                # first merge the BeamCluster files into one
-                print('\nMerging BeamCluster files...\n')
-                os.system('sh merge_it.sh ' + singularity + ' ' + BC_scratch_output_path + run + '/ ' + run + ' ' + 'BC')
-                time.sleep(1)
-
-                # Then copy it
-                os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path)
-                check_count_BC += 1
+                    # again, just resubmit all of them
+                    for j in range(n_jobs):
+                        os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + parts_i[j] + ' ' + parts_f[j])
+                        time.sleep(1)
+                    BC_resubs[i] += 1
+                else:
+                    print('\nBC job complete for Run ' + runs_to_run[i] + '\n')
+                    BC_resubs[i] = -1
+    
+            elif BC_check[i] == True and BC_resubs[i] == 2:    # no more jobs, but already re-submitted twice
+                print('\nMax re-submissions reached for run ' + runs_to_run[i] + ' for BC jobs! Will not transfer to /persistent\n')
                 complete_BC += 1
-            else:
-                print('\nRun ' + runs_to_run[i] + ' already transferred\n')
-                check_count_BC += 1
-
-
-        else:   # still running
-            check_count_BC += 1     # how many jobs are still active
-
-
-    if check_count_BC == len(BC_check):
-        helper_script.wait(5)     # wait 5 minutes
+    
+            
+            # actually complete, transfer
+            elif BC_resubs[i] == -1:
+                present = helper_script.check_root_pro(runs_to_run[i],beamcluster_path)
+                if present == False:
+    
+                    # first merge the BeamCluster files into one
+                    print('\nMerging BeamCluster files...\n')
+                    os.system('sh merge_it.sh ' + singularity + ' ' + BC_scratch_output_path + run + '/ ' + run + ' ' + 'BC')
+                    time.sleep(1)
+    
+                    # Then copy it
+                    os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path)
+                    check_count_BC += 1
+                    complete_BC += 1
+                else:
+                    print('\nRun ' + runs_to_run[i] + ' already transferred\n')
+                    check_count_BC += 1
+    
+    
+            else:   # still running
+                check_count_BC += 1     # how many jobs are still active
+    
+    
+        if check_count_BC == len(BC_check):
+            helper_script.wait(5)     # wait 5 minutes
 
 
     print('\nNo jobs left! All runs', runs_to_run, 'completed!')
