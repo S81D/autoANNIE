@@ -581,7 +581,7 @@ def container_BC(name_TA, input_path):
     file.write('\n')
 
     file.write('# Run the toolchain, and output verbose to log file\n')
-    file.write('./Analyse configfiles/BeamClusterAnalysis/ToolChainConfig >> /srv/logfile_BC_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('./Analyse configfiles/BeamClusterAnalysis/ToolChainConfig >> /srv/logfile_BC_${PART_NAME}_${PI}_${PF}.txt 2>&1 \n')
     file.write('\n')
 
     file.write('# log files\n')
