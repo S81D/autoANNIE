@@ -360,7 +360,7 @@ if which_mode == '2':        # BeamCluster
                 time.sleep(1)
 
                 # Then copy it
-                os.system('sh BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path)
+                os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path)
                 check_count_BC += 1
                 complete_BC += 1
             else:
