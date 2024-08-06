@@ -379,7 +379,7 @@ if which_mode == '2':        # BeamCluster
     print('\nNo jobs left! All runs', runs_to_run, 'completed!')
     print('\nCleaning up...\n')   # remove leftover files produced
     os.system('rm BeamCluster/Processed*.tar.gz')    # BC job tar ball of processed files (this should be removed earlier but just in case)
-    os.system('rm ProcessedRawData_PMT*')
+    os.system('rm BeamCluster/ProcessedData_PMT*')
     os.system('rm BeamCluster/submit_grid_job.sh')
     os.system('rm BeamCluster/grid_job.sh')
     os.system('rm BeamCluster/run_container_job.sh')
