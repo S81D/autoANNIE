@@ -381,7 +381,227 @@ def run_container_job(run, name_TA, DLS, first, final):
     return
 
 
-### done ###
+
+
+# ------------------------------------------------ #
+# BeamCluster job scripts
+
+# submission script
+def submit_BC(input_path, output_path, TA_tar_name):
+
+    # job resources
+    disk_space = str(10)    # GB
+    lifetime = str(4)       # hr
+    mem = str(2000)         # MB
+
+    file = open(input_path + 'BeamCluster/submit_grid_job.sh', "w")
+
+    file.write('# Job submission script for BeamClusterAnalysis toolchain\n')
+    file.write('\n')
+
+    file.write('RUN=$1\n')
+    file.write('PI=$2\n')
+    file.write('PF=$3\n')
+    file.write('\n')
+    file.write('export INPUT_PATH=' + input_path + 'BeamCluster/\n')
+    file.write('export OUTPUT_FOLDER=' + output_path + '$RUN\n')
+
+    file.write('echo ""\n')
+    file.write('echo "submitting job..."\n')
+    file.write('echo ""\n')
+    file.write('\n')
+
+    file.write('QUEUE=medium\n')
+    file.write('\n')
+
+    file.write('mkdir -p $OUTPUT_FOLDER\n')
+    file.write('\n')
+
+    file.write('jobsub_submit --memory=' + mem + 'MB --expected-lifetime=' + lifetime + 'h -G annie --disk=' + disk_space + 'GB ')
+    file.write('--resource-provides=usage_model=OFFSITE --blacklist=Omaha,Swan,Wisconsin ')
+    file.write('-f ${INPUT_PATH}/ProcessedRawData_R{RUN}.tar.gz -f ${INPUT_PATH}/run_container_job.sh -f ${INPUT_PATH}/' + TA_tar_name)
+    file.write('-d OUTPUT $OUTPUT_FOLDER ')
+    file.write('file://${INPUT_PATH}/grid_job.sh BC_${RUN} ${PI} ${PF}\n')
+    file.write('\n')
+
+    file.write('echo "job name is: BC_${RUN} ${PI} ${PF}"\n')
+    file.write('echo "" \n')
+
+    file.close()
+
+    return
+
+
+
+# job script that will run on the cluster node
+def grid_BC(user, TA_tar_name, name_TA, input_path):
+
+    file = open(input_path + 'BeamCluster/grid_job.sh', "w")
+
+    file.write('#!/bin/bash\n')
+    file.write('# Steven Doran\n')
+    file.write('\n')
+    file.write('cat <<EOF\n')
+    file.write('condor   dir: $CONDOR_DIR_INPUT\n')
+    file.write('process   id: $PROCESS\n')
+    file.write('output   dir: $CONDOR_DIR_OUTPUT\n')
+    file.write('EOF\n')
+    file.write('\n')
+
+    file.write('HOSTNAME=$(hostname -f)\n')
+    file.write('GRIDUSER="' + user + '"\n')
+    file.write('\n')
+    file.write('# Argument passed through job submission\n')
+    file.write('FIRST_ARG=$1\n')
+    file.write('PART_NAME=$(echo "$FIRST_ARG" | grep -oE \'[0-9]+\'\n')
+    file.write('PI=$2\n')
+    file.write('PF=$3\n')
+    file.write('\n')
+
+    file.write('# Create a dummy log file in the output directory\n')
+    file.write('DUMMY_OUTPUT_FILE=${CONDOR_DIR_OUTPUT}/${JOBSUBJOBID}_dummy_output\n')
+    file.write('touch ${DUMMY_OUTPUT_FILE}\n')
+    file.write('\n')
+    file.write('# Copy datafiles from $CONDOR_INPUT onto worker node (/srv)\n')
+    file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/ProcessedRawData_R${PART_NAME}.tar.gz .\n')
+    file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/' + TA_tar_name + ' .\n')
+    file.write('\n')
+
+    file.write('# un-tar TA\n')
+    file.write('tar -xzf ' + TA_tar_name + '\n')
+    file.write('tar -xzf ProcessedRawData_R${PART_NAME}.tar.gz\n')
+    file.write('rm ' + TA_tar_name + '\n')
+    file.write('rm ProcessedRawData_R${PART_NAME}.tar.gz\n')
+    file.write('\n')
+
+    file.write('# Remove Processed files outside bounds of the job\n')
+    file.write('echo "Removing Processed files outside job limits..." >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('for file in /srv/Processed*; do\n')
+    file.write('    part_number=$(echo "$file" | sed \'s/.*S0p\\([0-9]*\\)$/\\1/\')\n')
+    file.write('    if [ "$part_number" -lt "$PI" ] || [ "$part_number" -gt "$PF" ]; then\n')
+    file.write('        rm "$file"\n')
+    file.write('    fi\n')
+    file.write('done\n')
+    file.write('ls -v /srv/Processed* >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('echo "Loop complete" >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('echo "" >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('\n')
+    file.write('ls -v /srv/Processed* >> my_inputs.txt\n')
+    file.write('\n')
+    file.write('echo "" >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('echo "Processed files present:" >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('ls -v /srv/Processed* >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('echo "" >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('\n')
+
+    file.write('echo "Make sure singularity is bind mounting correctly (ls /cvmfs/singularity)" >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('ls /cvmfs/singularity.opensciencegrid.org >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('\n')
+    file.write('# Setup singularity container\n')
+    file.write('singularity exec -B/srv:/srv /cvmfs/singularity.opensciencegrid.org/anniesoft/toolanalysis:latest/ $CONDOR_DIR_INPUT/run_container_job.sh $PART_NAME $PI $PF\n')
+    file.write('\n')
+    file.write('# ------ The script run_container_job.sh will now run within singularity ------ #\n')
+    file.write('\n')
+
+    file.write('# cleanup and move files to $CONDOR_OUTPUT after leaving singularity environment\n')
+    file.write('echo "Moving the output files to CONDOR OUTPUT..." >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('${JSB_TMP}/ifdh.sh cp -D /srv/logfile* $CONDOR_DIR_OUTPUT         # log files\n')
+    file.write('${JSB_TMP}/ifdh.sh cp -D /srv/*.ntuple.root $CONDOR_DIR_OUTPUT    # Modify: any .root files etc.. that are produced from your toolchain\n')
+    file.write('\n')
+    file.write('echo "" >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('echo "Input:" >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('ls $CONDOR_DIR_INPUT >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('echo "" >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('echo "Output:" >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('ls $CONDOR_DIR_OUTPUT >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('\n')
+    file.write('echo "" >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('echo "Cleaning up..." >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('echo "srv directory:" >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('ls -v /srv >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('\n')
+    file.write('# make sure to clean up the files left on the worker node\n')
+    file.write('rm /srv/Processed*\n')
+    file.write('rm /srv/my_inputs.txt\n')
+    file.write('rm -rf /srv/' + name_TA + '\n')
+    file.write('\n')
+    file.write('### END ###\n')
+
+    file.close()
+
+    return
+
+
+# job that executes within our container
+def container_BC(name_TA, input_path):
+
+    file = open(input_path + 'BeamCluster/run_container_job.sh', "w")
+
+    file.write('#!/bin/bash\n')
+    file.write('# Steven Doran\n')
+    file.write('\n')
+
+    file.write('FIRST_ARG=$1\n')
+    file.write('PART_NAME=$(echo "$FIRST_ARG" | grep -oE \'[0-9]+\'\n')
+    file.write('PI=$2\n')
+    file.write('PF=$3\n')
+    file.write('\n')
+    
+    file.write('# logfile\n')
+    file.write('touch /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('pwd >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('ls -v >>/srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('echo "" >>/srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('\n')
+
+    file.write('# place the input file containing the necessary data files in the toolchain\n')
+    file.write('echo "my_inputs.txt paths:" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('cat /srv/my_inputs.txt >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('\cp /srv/my_inputs.txt /srv/' + name_TA + '/configfiles/BeamClusterAnalysis/\n')
+    file.write('echo "" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('\n')
+
+    file.write('# enter ToolAnalysis directory\n')
+    file.write('cd ' + name_TA + '/\n')
+    file.write('\n')
+
+    file.write('# adjust TreeMaker to have the correct name\n')
+    file.write('cd configfiles/BeamClusterAnalysis\n')
+    file.write('python3 config.py ${PART_NAME} ${PI} ${PF}\n')
+    file.write('echo "ANNIEEventTreeMaker config:" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('cat ANNIEEventTreeMakerConfig >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('echo "" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('\n')
+
+    file.write('cd ../../\n')
+    file.write('\n')
+
+    file.write('# set up paths and libraries\n')
+    file.write('source Setup.sh\n')
+    file.write('\n')
+
+    file.write('# Run the toolchain, and output verbose to log file\n')
+    file.write('./Analyse configfiles/BeamClusterAnalysis/ToolChainConfig >> /srv/logfile_BC_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('\n')
+
+    file.write('# log files\n')
+    file.write('echo"" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('echo "ToolAnalysis directory contents:" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('ls -lrth >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('echo "" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('echo "ToolChain files:" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('ls configfiles/BeamClusterAnalysis/ >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('echo "" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('\n')
+
+    file.write('# copy any produced files to /srv for extraction\n')
+    file.write('cp *.ntuple.root /srv/\n')
+    file.write('\n')
+    file.write('# make sure any output files you want to keep are put in /srv or any subdirectory of /srv\n')
+    file.write('\n')
+    file.write('### END ###\n')
+
+    file.close()
 
 
 
