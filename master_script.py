@@ -268,7 +268,7 @@ if which_mode == '2':        # BeamCluster
 
     # clear any leftovers
     os.system('rm BeamCluster/Processed*.tar.gz')
-    os.system('rm ProcessedRawData_PMT*')
+    os.system('rm BeamCluster/ProcessedData_PMT*')
     os.system('rm BeamCluster/submit_grid_job.sh')
     os.system('rm BeamCluster/grid_job.sh')
     os.system('rm BeamCluster/run_container_job.sh')
@@ -306,7 +306,7 @@ if which_mode == '2':        # BeamCluster
                 print('\nSubmitting BeamCluster job for Run ' + runs_to_run[i] + '...\n')
                 
                 # produce processed file tar-ball
-                os.system('sh tar_files.sh ' + runs_to_run[i] + ' ' + scratch_path + ' ' + data_path)
+                os.system('sh BeamCluster/tar_files.sh ' + runs_to_run[i] + ' ' + scratch_path + ' ' + data_path)
                 time.sleep(1)
 
                 for j in range(n_jobs):
