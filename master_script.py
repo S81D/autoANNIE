@@ -91,15 +91,17 @@ usage_verbose = """
 """
 
 usage_verbose_BC = """
-#################################################
+#########################################################################################
 # ******* BeamCluster mode ********
+# args: --runs_to_run
+
+# runs_to_run = runs you would like to run the BC toolchain over. It will ask you to enter one at a time
 
 # Grid job specifications:
 # -- lifetime: 4hr
 # -- memory: 2GB
 # -- disk: 10GB for BC
-
-#################################################
+#########################################################################################
 """
 
 
@@ -263,8 +265,23 @@ if which_mode == '1':      # Event building mode
 if which_mode == '2':        # BeamCluster
 
     print(usage_verbose_BC, '\n')
+    runs_to_run = helper_script.get_runs_from_user()
 
-    time.sleep(2)
+    print('\n\n\n')
+    print('*************************************************')
+    print('          BeamClusterAnalysis initaited          ')
+    print('*************************************************\n')
+    
+    print('The following argument has been provided:\n')
+    print('  - Runs to run: ', runs_to_run)
+    print('\n')
+    time.sleep(3)
+    print('Locking arguments in...')
+    for i in range(5):
+        print(str(5-i) + '...')
+        time.sleep(1)
+    print('\n\nProceeding with BeamClusterAnalysis...')
+    time.sleep(3)
 
     # clear any leftovers
     os.system('rm BeamCluster/Processed*.tar.gz')
