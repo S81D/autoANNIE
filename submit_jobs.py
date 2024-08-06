@@ -542,7 +542,7 @@ def container_BC(name_TA, input_path):
     file.write('\n')
 
     file.write('FIRST_ARG=$1\n')
-    file.write('PART_NAME=$(echo "$FIRST_ARG" | grep -oE \'[0-9]+\'\n')
+    file.write('PART_NAME=$(echo "$FIRST_ARG" | grep -oE \'[0-9]+\')\n')
     file.write('PI=$2\n')
     file.write('PF=$3\n')
     file.write('\n')
