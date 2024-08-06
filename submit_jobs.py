@@ -419,7 +419,7 @@ def submit_BC(input_path, output_path, TA_tar_name):
 
     file.write('jobsub_submit --memory=' + mem + 'MB --expected-lifetime=' + lifetime + 'h -G annie --disk=' + disk_space + 'GB ')
     file.write('--resource-provides=usage_model=OFFSITE --blacklist=Omaha,Swan,Wisconsin ')
-    file.write('-f ${INPUT_PATH}/ProcessedRawData_R{RUN}.tar.gz -f ${INPUT_PATH}/run_container_job.sh -f ${INPUT_PATH}/' + TA_tar_name)
+    file.write('-f ${INPUT_PATH}/ProcessedRawData_R${RUN}.tar.gz -f ${INPUT_PATH}/run_container_job.sh -f ${INPUT_PATH}/' + TA_tar_name + ' ')
     file.write('-d OUTPUT $OUTPUT_FOLDER ')
     file.write('file://${INPUT_PATH}/grid_job.sh BC_${RUN} ${PI} ${PF}\n')
     file.write('\n')
