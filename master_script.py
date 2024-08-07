@@ -292,9 +292,16 @@ if which_mode == '2':        # BeamCluster
     os.system('rm BeamCluster/grid_job.sh')
     os.system('rm BeamCluster/run_container_job.sh')
     os.system('rm BeamCluster/BeamCluster*.root')
+    time.sleep(1)
 
     BC_resubs = [0 for i in range(len(runs_to_run))]
     complete_BC = 0
+
+    # create job submission scripts  (since these scripts take args, we don't need to keep creating them for every job)
+    submit_jobs.submit_BC(scratch_path, BC_scratch_output_path, TA_tar_name)
+    submit_jobs.grid_BC(user, TA_tar_name, TA_folder, scratch_path)
+    submit_jobs.container_BC(TA_folder, scratch_path)
+    time.sleep(1)
 
     while complete_BC != len(BC_resubs):
 
@@ -332,11 +339,6 @@ if which_mode == '2':        # BeamCluster
                     time.sleep(1)
     
                     for j in range(n_jobs):
-    
-                        # create job submission scripts
-                        submit_jobs.submit_BC(scratch_path, BC_scratch_output_path, TA_tar_name)
-                        submit_jobs.grid_BC(user, TA_tar_name, TA_folder, scratch_path)
-                        submit_jobs.container_BC(TA_folder, scratch_path)
     
                         os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + parts_i[j] + ' ' + parts_f[j])
     
