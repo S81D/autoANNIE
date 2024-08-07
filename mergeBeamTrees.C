@@ -14,7 +14,7 @@ void mergeBeamTrees(const std::string &directory, int runNumber, const std::stri
     std::string outputFileName = file_name + "_" + std::to_string(runNumber) + ".root";
     
     // Create a TChain to merge BeamTree trees
-    TChain chain(tree_name);
+    TChain chain(tree_name.c_str());
 
     // Create directory object
     TSystemDirectory dir(runDirectory.c_str(), runDirectory.c_str());
