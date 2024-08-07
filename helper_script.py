@@ -96,7 +96,7 @@ def beamfetcher(run, step_size, raw_path, app_path, scratch_path, singularity, b
             time.sleep(1)
 
         print('\nMerging beam files...\n')
-        os.system('sh merge_it.sh ' + singularity + ' ' + app_path + ' ' + run)
+        os.system('sh merge_it.sh ' + singularity + ' ' + app_path + ' ' + run + ' ' + 'beamfetcher')
         time.sleep(1)
         
         print('\nTransferring beam file...\n')
