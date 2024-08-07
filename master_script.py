@@ -84,7 +84,7 @@ usage_verbose = """
 # runs_to_run = runs you would like to event build. It will ask you to enter one at a time
 
 # Grid job specifications:
-# -- lifetime: 4hr
+# -- lifetime: 6hr
 # -- memory: 4GB
 # -- disk: varies depending on number of part files, but typically between 5 and 10GB
 #########################################################################################
@@ -111,7 +111,7 @@ if which_mode == '1':      # Event building mode
 
     # user provided arguments
     DLS = input('Please specify if this run was taken during Daylight Savings (1 if yes, 0 if no):     ')
-    step_size = int(input('Please specify the job part file size (5 is recommended):     '))
+    step_size = int(input('Please specify the job part file size (3-4 is recommended):     '))
     resub_step_size = 1    # not provided by user - manually set for resubmissions
     runs_to_run = helper_script.get_runs_from_user()
     
