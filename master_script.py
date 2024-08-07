@@ -375,7 +375,7 @@ if which_mode == '2':        # BeamCluster
     
                     # first merge the BeamCluster files into one
                     print('\nMerging BeamCluster files...\n')
-                    os.system('sh merge_it.sh ' + singularity + ' ' + BC_scratch_output_path + runs_to_run[i] + '/ ' + runs_to_run[i] + ' ' + 'BC')
+                    os.system('sh merge_it.sh ' + singularity + ' ' + BC_scratch_output_path + ' ' + runs_to_run[i] + ' ' + 'BC')
                     time.sleep(1)
     
                     # Then copy it
