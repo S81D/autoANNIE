@@ -289,6 +289,7 @@ if which_mode == '2':        # BeamCluster
     os.system('rm BeamCluster/submit_grid_job.sh')
     os.system('rm BeamCluster/grid_job.sh')
     os.system('rm BeamCluster/run_container_job.sh')
+    os.system('rm BeamCluster/BeamCluster*.root')
 
     BC_resubs = [0 for i in range(len(runs_to_run))]
     complete_BC = 0
@@ -402,5 +403,6 @@ if which_mode == '2':        # BeamCluster
     os.system('rm BeamCluster/submit_grid_job.sh')
     os.system('rm BeamCluster/grid_job.sh')
     os.system('rm BeamCluster/run_container_job.sh')
+    os.system('rm BeamCluster/BeamCluster*.root')
     time.sleep(1)
     print('\nExiting...\n')
