@@ -390,7 +390,7 @@ def run_container_job(run, name_TA, DLS, first, final):
 def submit_BC(input_path, output_path, TA_tar_name):
 
     # job resources
-    disk_space = str(10)    # GB
+    disk_space = str(15)    # GB
     lifetime = str(4)       # hr
     mem = str(2000)         # MB
 
