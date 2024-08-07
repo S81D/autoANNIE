@@ -9,7 +9,7 @@ if [ "$WHICH" == "beamfetcher" ]; then
     FILE_NAME="beamfetcher"
     TREE_NAME="BeamTree"
 elif [ "$WHICH" == "BC" ]; then
-    FILE_NAME="BeamCluster/BeamCluster"
+    FILE_NAME="BeamCluster"
     TREE_NAME="Event"
 fi
 
