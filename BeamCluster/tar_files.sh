@@ -3,7 +3,7 @@ INPUT_PATH=$2BeamCluster/
 DATA_PATH=$3R${RUN}/
 
 echo ""
-echo "tar-ing processed files..."
+echo "tar-ing processed files (this may take several minutes depending on the run size)..."
 echo ""
 
 rm -rf ProcessedRawData_R${RUN}.tar.gz
