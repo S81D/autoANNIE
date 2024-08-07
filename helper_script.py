@@ -315,6 +315,6 @@ def check_root_scratch(run_number,required_count,output_path):
 def check_root_pro(run_number,output_path):
 
     name_of_file = 'BeamCluster_' + run_number
-    file_path = os.path.join(output_path, f"{name_of_file}.ntuple.root")
+    file_path = os.path.join(output_path, f"{name_of_file}.root")
 
     return os.path.exists(file_path)
