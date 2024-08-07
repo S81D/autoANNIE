@@ -274,8 +274,8 @@ def wait(length_of_time):
     return
 
 
-# breakup run parts into seperate jobs if the number of processed files exceeds 500
-def BC_breakup(run_number, data_path):
+# breakup run parts into seperate jobs if the number of processed files exceeds a certain part size
+def BC_breakup(run_number, data_path, part_size):
 
     processed_dir = data_path + "R" + run_number + "/"
 
@@ -285,12 +285,12 @@ def BC_breakup(run_number, data_path):
     # Count the number of processed files
     num_processed_files = len(processed_files)
 
-    if num_processed_files <= 500:
+    if num_processed_files <= part_size:
         return ['0'], [str(num_processed_files - 1)]
     else:
         start_indices = ['0']
         end_indices = []
-        for i in range(500, num_processed_files, 500):
+        for i in range(part_size, num_processed_files, part_size):
             start_indices.append(str(i))
             end_indices.append(str(i - 1))
         end_indices.append(str(num_processed_files - 1))
