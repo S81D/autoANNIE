@@ -107,6 +107,8 @@ usage_verbose_BC = """
 
 if which_mode == '1':      # Event building mode
 
+    print(usage_verbose, '\n')
+
     # user provided arguments
     DLS = input('Please specify if this run was taken during Daylight Savings (1 if yes, 0 if no):     ')
     step_size = int(input('Please specify the job part file size (5 is recommended):     '))
