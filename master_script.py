@@ -100,7 +100,7 @@ usage_verbose_BC = """
 # Grid job specifications:
 # -- lifetime: 4hr
 # -- memory: 2GB
-# -- disk: 10GB for BC
+# -- disk: 15GB for BC
 #########################################################################################
 """
 
@@ -300,6 +300,8 @@ if which_mode == '2':        # BeamCluster
     submit_jobs.container_BC(TA_folder, scratch_path)
     time.sleep(1)
 
+    BC_job_size = 200       # how many part files per job  (500 is the recommended max - need 15 GB of disk space)
+
     while complete_BC != len(BC_resubs):
 
         BC_active_jobs, BC_which_runs, BC_check = helper_script.my_jobs_BC(runs_to_run, user)
@@ -307,8 +309,8 @@ if which_mode == '2':        # BeamCluster
         check_count_BC = 0
         for i in range(len(BC_check)):
     
-            # breaks the part files into 500 part sections
-            parts_i, parts_f = helper_script.BC_breakup(runs_to_run[i], data_path)
+            # breaks the part files into N part sections
+            parts_i, parts_f = helper_script.BC_breakup(runs_to_run[i], data_path, BC_job_size)
             n_jobs = len(parts_i)
             
             # initial submission
