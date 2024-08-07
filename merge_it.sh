@@ -23,3 +23,11 @@ singularity shell ${BIND} /cvmfs/singularity.opensciencegrid.org/anniesoft/toola
 
 EOF
 
+
+if [ "$WHICH" == "BC" ]; then
+    mv BeamCluster_$RUN.root BeamCluster/
+    echo ""
+    ls -lrth BeamCluster/BeamCluster*
+    echo ""
+fi
+
