@@ -203,9 +203,6 @@ if which_mode == '1':      # Event building mode
     resubs = [0 for i in range(len(runs_to_run))]
     complete = 0
     
-    BC_resubs = [0 for i in range(len(runs_to_run))]
-    complete_BC = 0
-    
     print('\n***********************************************************\n')
     
     while complete != len(resubs):
@@ -295,7 +292,7 @@ if which_mode == '2':        # BeamCluster
     time.sleep(1)
 
     BC_resubs = [0 for i in range(len(runs_to_run))]
-    complete_BC = 0
+    complete_BC = 0      # when this value == number of runs, the while loop will complete
 
     # create job submission scripts  (since these scripts take args, we don't need to keep creating them for every job)
     submit_jobs.submit_BC(scratch_path, BC_scratch_output_path, TA_tar_name)
@@ -327,7 +324,7 @@ if which_mode == '2':        # BeamCluster
                 if present_pro == True:
                     print('\nRun ' + runs_to_run[i] + ' already present in /persistent --> skipping job submission and this run will not be transfered...\n')
                     BC_resubs[i] = -1
-    
+                    complete_BC += 1
     
                 # 2. root file is not present in either processed or scratch, indicating it has never been produced.
                 #    if this is the case, submit the initial job
@@ -341,7 +338,7 @@ if which_mode == '2':        # BeamCluster
                     for j in range(n_jobs):
     
                         os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + parts_i[j] + ' ' + parts_f[j])
-    
+
                         time.sleep(1)
     
                     BC_resubs[i] += 1
