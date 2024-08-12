@@ -390,8 +390,7 @@ def run_container_job(run, name_TA, DLS, first, final):
 def submit_BC(input_path, output_path, TA_tar_name):
 
     # job resources
-    disk_space = str(10)    # GB
-    lifetime = str(2)       # hr
+    lifetime = str(8)       # hr
     mem = str(2000)         # MB
 
     file = open(input_path + 'BeamCluster/submit_grid_job.sh', "w")
@@ -402,12 +401,14 @@ def submit_BC(input_path, output_path, TA_tar_name):
     file.write('RUN=$1\n')
     file.write('PI=$2\n')
     file.write('PF=$3\n')
+    file.write('DISK_SPACE=$4\n')
     file.write('\n')
     file.write('export INPUT_PATH=' + input_path + '\n')
     file.write('export OUTPUT_FOLDER=' + output_path + '$RUN\n')
 
     file.write('echo ""\n')
     file.write('echo "submitting job..."\n')
+    file.write('echo "--> This job will use ${DISK_SPACE}GB of disk space"\n')
     file.write('echo ""\n')
     file.write('\n')
 
@@ -417,7 +418,7 @@ def submit_BC(input_path, output_path, TA_tar_name):
     file.write('mkdir -p $OUTPUT_FOLDER\n')
     file.write('\n')
 
-    file.write('jobsub_submit --memory=' + mem + 'MB --expected-lifetime=' + lifetime + 'h -G annie --disk=' + disk_space + 'GB ')
+    file.write('jobsub_submit --memory=' + mem + 'MB --expected-lifetime=' + lifetime + 'h -G annie --disk=${DISK_SPACE}GB ')
     file.write('--resource-provides=usage_model=OFFSITE --blacklist=Omaha,Swan,Wisconsin ')
     file.write('-f ${INPUT_PATH}/BeamCluster/ProcessedRawData_R${RUN}.tar.gz -f ${INPUT_PATH}/BeamCluster/run_container_job.sh -f ${INPUT_PATH}/' + TA_tar_name + ' ')
     file.write('-d OUTPUT $OUTPUT_FOLDER ')
