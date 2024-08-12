@@ -291,6 +291,15 @@ if which_mode == '2':        # BeamCluster
     os.system('rm BeamCluster/BeamCluster*.root')
     time.sleep(1)
 
+    # ---------------------------------- #
+    # Tar processed files for each run
+    print('\nProducing tar-balls for each run...\n')
+    for i in range(len(runs_to_run)):
+        print('\n', runs_to_run[i])
+        os.system('sh BeamCluster/tar_files.sh ' + runs_to_run[i] + ' ' + scratch_path + ' ' + data_path)
+        time.sleep(3)
+    # ---------------------------------- #
+
     BC_resubs = [0 for i in range(len(runs_to_run))]
     complete_BC = 0      # when this value == number of runs, the while loop will complete
 
@@ -312,6 +321,8 @@ if which_mode == '2':        # BeamCluster
             # breaks the part files into N part sections
             parts_i, parts_f = helper_script.BC_breakup(runs_to_run[i], data_path, BC_job_size)
             n_jobs = len(parts_i)
+
+            disk_space_factor = str(int(((n_jobs*BC_job_size*8)/1000) + 12))
             
             # initial submission
             if BC_check[i] == True and BC_resubs[i] == 0:
@@ -332,14 +343,10 @@ if which_mode == '2':        # BeamCluster
                 #    if this is the case, submit the initial job
                 elif present == False and present_pro == False:
                     print('\nSubmitting BeamCluster job for Run ' + runs_to_run[i] + '...\n')
-                    
-                    # produce processed file tar-ball
-                    os.system('sh BeamCluster/tar_files.sh ' + runs_to_run[i] + ' ' + scratch_path + ' ' + data_path)
-                    time.sleep(1)
     
                     for j in range(n_jobs):
     
-                        os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + parts_i[j] + ' ' + parts_f[j])
+                        os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + parts_i[j] + ' ' + parts_f[j] + ' ' + disk_space_factor)
 
                         time.sleep(1)
     
