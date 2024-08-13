@@ -387,7 +387,7 @@ def run_container_job(run, name_TA, DLS, first, final):
 # BeamCluster job scripts
 
 # submission script
-def submit_BC(input_path, output_path, TA_tar_name):
+def submit_BC(input_path, output_path, TA_tar_name, data_path):
 
     # job resources
     lifetime = str(8)       # hr
@@ -405,6 +405,8 @@ def submit_BC(input_path, output_path, TA_tar_name):
     file.write('\n')
     file.write('export INPUT_PATH=' + input_path + '\n')
     file.write('export OUTPUT_FOLDER=' + output_path + '$RUN\n')
+    file.write('export PROCESSED_FILES_PATH=' + data_path + 'R${RUN}/\n')
+    file.write('\n')
 
     file.write('echo ""\n')
     file.write('echo "submitting job..."\n')
@@ -418,9 +420,19 @@ def submit_BC(input_path, output_path, TA_tar_name):
     file.write('mkdir -p $OUTPUT_FOLDER\n')
     file.write('\n')
 
+    file.write('# Create a list of part files to attach\n')
+    file.write('PART_FILES=""\n')
+    file.write('for FILE in ${PROCESSED_FILES_PATH}ProcessedData*; do\n')
+    file.write('''    PART_NUM=$(echo "$FILE" | grep -oP 'S0p\K[0-9]+')\n''')
+    file.write('    if [ "$PART_NUM" -ge "$PI" ] && [ "$PART_NUM" -le "$PF" ]; then\n')
+    file.write('        PART_FILES="$PART_FILES -f $FILE"\n')
+    file.write('    fi\n')
+    file.write('done\n')
+    file.write('\n')
+
     file.write('jobsub_submit --memory=' + mem + 'MB --expected-lifetime=' + lifetime + 'h -G annie --disk=${DISK_SPACE}GB ')
     file.write('--resource-provides=usage_model=OFFSITE --blacklist=Omaha,Swan,Wisconsin ')
-    file.write('-f ${INPUT_PATH}/BeamCluster/ProcessedRawData_R${RUN}.tar.gz -f ${INPUT_PATH}/BeamCluster/run_container_job.sh -f ${INPUT_PATH}/' + TA_tar_name + ' ')
+    file.write('$PART_FILES -f ${INPUT_PATH}/BeamCluster/run_container_job.sh -f ${INPUT_PATH}/' + TA_tar_name + ' ')
     file.write('-d OUTPUT $OUTPUT_FOLDER ')
     file.write('file://${INPUT_PATH}/BeamCluster/grid_job.sh BC_${RUN} ${PI} ${PF}\n')
     file.write('\n')
@@ -464,31 +476,37 @@ def grid_BC(user, TA_tar_name, name_TA, input_path):
     file.write('touch ${DUMMY_OUTPUT_FILE}\n')
     file.write('\n')
     file.write('# Copy datafiles from $CONDOR_INPUT onto worker node (/srv)\n')
-    file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/ProcessedRawData_R${PART_NAME}.tar.gz .\n')
+    file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/ProcessedData* .\n')
     file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/' + TA_tar_name + ' .\n')
     file.write('\n')
 
     file.write('# un-tar TA\n')
     file.write('tar -xzf ' + TA_tar_name + '\n')
-    file.write('tar -xzf ProcessedRawData_R${PART_NAME}.tar.gz\n')
     file.write('rm ' + TA_tar_name + '\n')
-    file.write('rm ProcessedRawData_R${PART_NAME}.tar.gz\n')
     file.write('\n')
 
-    file.write('# Remove Processed files outside bounds of the job\n')
-    file.write('echo "Removing Processed files outside job limits..." >> ${DUMMY_OUTPUT_FILE}\n')
-    file.write('for file in /srv/Processed*; do\n')
-    file.write('    part_number=$(echo "$file" | sed \'s/.*S0p\\([0-9]*\\)$/\\1/\')\n')
-    file.write('    if [ "$part_number" -lt "$PI" ] || [ "$part_number" -gt "$PF" ]; then\n')
-    file.write('        rm "$file"\n')
-    file.write('    fi\n')
-    file.write('done\n')
-    file.write('ls -v /srv/Processed* >> ${DUMMY_OUTPUT_FILE}\n')
-    file.write('echo "Loop complete" >> ${DUMMY_OUTPUT_FILE}\n')
-    file.write('echo "" >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('# Check that there is the necessary amount of processed files present\n')
+    file.write('NUM_PART_FILES=$((PF - PI + 1))\n')
+    file.write('echo "There should be $NUM_PART_FILES files in this job" >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('FILES_PRESENT=$(ls /srv/Processed* 2>/dev/null | wc -l)\n')
+    file.write('echo "*** There are $FILES_PRESENT files here ***" >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('# Exit if the number of part files doesnt match the expected count\n')
+    file.write('if [ "$FILES_PRESENT" -ne "$NUM_PART_FILES" ]; then\n')
+    file.write('    echo "Expected $NUM_PART_FILES files, but found $FILES_PRESENT. Creating a DANGER file and proceeding..." >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('    touch /srv/DANGER_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('    echo "" >> /srv/DANGER_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('    ls -v /srv/Processed* >> /srv/DANGER_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('fi\n')
     file.write('\n')
+
+    file.write('echo "" >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('echo "Looks like they matched. Proceeding with the job..." >> ${DUMMY_OUTPUT_FILE}\n')
+    file.write('\n')
+
+    file.write('# Create my_inputs.txt for toolchain\n')
     file.write('ls -v /srv/Processed* >> my_inputs.txt\n')
     file.write('\n')
+    
     file.write('echo "" >> ${DUMMY_OUTPUT_FILE}\n')
     file.write('echo "Processed files present:" >> ${DUMMY_OUTPUT_FILE}\n')
     file.write('ls -v /srv/Processed* >> ${DUMMY_OUTPUT_FILE}\n')
