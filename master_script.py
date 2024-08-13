@@ -18,7 +18,7 @@ import submit_jobs
 
 ''' Please modify the following to reflect your working directory '''
 
-user = 'doran'
+user = '<username>'
 
 # bind mounted path for entering your container
 singularity = '-B/pnfs:/pnfs,/exp/annie/app/users/doran/temp_directory:/tmp,/exp/annie/data:/exp/annie/data,/exp/annie/app:/exp/annie/app'
