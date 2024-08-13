@@ -98,9 +98,9 @@ usage_verbose_BC = """
 # runs_to_run = runs you would like to run the BC toolchain over. It will ask you to enter one at a time
 
 # Grid job specifications:
-# -- lifetime: 2hr
+# -- lifetime: 8hr
 # -- memory: 2GB
-# -- disk: 10GB for BC
+# -- disk: 10GB for BC (baseline, plus more depending on number of part files)
 #########################################################################################
 """
 
@@ -283,33 +283,22 @@ if which_mode == '2':        # BeamCluster
     time.sleep(3)
 
     # clear any leftovers
-    os.system('rm BeamCluster/Processed*.tar.gz')
-    os.system('rm BeamCluster/ProcessedData_PMT*')
     os.system('rm BeamCluster/submit_grid_job.sh')
     os.system('rm BeamCluster/grid_job.sh')
     os.system('rm BeamCluster/run_container_job.sh')
     os.system('rm BeamCluster/BeamCluster*.root')
     time.sleep(1)
 
-    # ---------------------------------- #
-    # Tar processed files for each run
-    print('\nProducing tar-balls for each run...\n')
-    for i in range(len(runs_to_run)):
-        print('\n', runs_to_run[i])
-        os.system('sh BeamCluster/tar_files.sh ' + runs_to_run[i] + ' ' + scratch_path + ' ' + data_path)
-        time.sleep(3)
-    # ---------------------------------- #
-
     BC_resubs = [0 for i in range(len(runs_to_run))]
     complete_BC = 0      # when this value == number of runs, the while loop will complete
 
     # create job submission scripts  (since these scripts take args, we don't need to keep creating them for every job)
-    submit_jobs.submit_BC(scratch_path, BC_scratch_output_path, TA_tar_name)
+    submit_jobs.submit_BC(scratch_path, BC_scratch_output_path, TA_tar_name, data_path)
     submit_jobs.grid_BC(user, TA_tar_name, TA_folder, scratch_path)
     submit_jobs.container_BC(TA_folder, scratch_path)
     time.sleep(1)
 
-    BC_job_size = 100       # how many part files per job  (500 is the recommended max - need 15 GB of disk space)
+    BC_job_size = 50       # how many part files per job  (500 is the recommended max)
 
     while complete_BC != len(BC_resubs):
 
@@ -322,7 +311,7 @@ if which_mode == '2':        # BeamCluster
             parts_i, parts_f = helper_script.BC_breakup(runs_to_run[i], data_path, BC_job_size)
             n_jobs = len(parts_i)
 
-            disk_space_factor = str(int(((n_jobs*BC_job_size*8)/1000) + 12))
+            disk_space_factor = str(int(((n_jobs*BC_job_size*8)/1000) + 10))
             
             # initial submission
             if BC_check[i] == True and BC_resubs[i] == 0:
@@ -365,9 +354,9 @@ if which_mode == '2':        # BeamCluster
                 if present == False:
                     print('\nRe-submitting BeamCluster job for Run ' + runs_to_run[i] + '...\n')
                     time.sleep(1)
-                    # again, just resubmit all of them
+                    # Just resubmit all of them (TODO: only submit missing files)
                     for j in range(n_jobs):
-                        os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + parts_i[j] + ' ' + parts_f[j])
+                        os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + parts_i[j] + ' ' + parts_f[j] + ' ' + disk_space_factor)
                         time.sleep(1)
                     BC_resubs[i] += 1
                 else:
@@ -408,8 +397,6 @@ if which_mode == '2':        # BeamCluster
 
     print('\nNo jobs left! All runs', runs_to_run, 'completed!')
     print('\nCleaning up...\n')   # remove leftover files produced
-    os.system('rm BeamCluster/Processed*.tar.gz')    # BC job tar ball of processed files (this should be removed earlier but just in case)
-    os.system('rm BeamCluster/ProcessedData_PMT*')
     os.system('rm BeamCluster/submit_grid_job.sh')
     os.system('rm BeamCluster/grid_job.sh')
     os.system('rm BeamCluster/run_container_job.sh')
