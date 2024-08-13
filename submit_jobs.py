@@ -499,7 +499,6 @@ def grid_BC(user, TA_tar_name, name_TA, input_path):
     file.write('if [ "$FILES_PRESENT" -ne "$NUM_PART_FILES" ]; then\n')
     file.write('    echo "Expected $NUM_PART_FILES files, but found $FILES_PRESENT. Creating a DANGER file and proceeding..." >> ${DUMMY_OUTPUT_FILE}\n')
     file.write('    touch /srv/DANGER_${PART_NAME}_${PI}_${PF}.txt\n')
-    file.write('    echo "" >> /srv/DANGER_${PART_NAME}_${PI}_${PF}.txt\n')
     file.write('    ls -v /srv/Processed* >> /srv/DANGER_${PART_NAME}_${PI}_${PF}.txt\n')
     file.write('fi\n')
     file.write('\n')
