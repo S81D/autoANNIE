@@ -609,6 +609,15 @@ def container_BC(name_TA, input_path):
     file.write('cd ../../\n')
     file.write('\n')
 
+    file.write('# Ensure the LAPPD pedestal files are correct\n')
+    file.write('ls Pedestals >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('ls */ >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n'
+    file.write('echo "" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('echo "LAPPDProcessedAna Configs file:" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('cat configfiles/LAPPDProcessedAna/Configs >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('echo "" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('\n')
+
     file.write('# set up paths and libraries\n')
     file.write('source Setup.sh\n')
     file.write('\n')
