@@ -390,7 +390,7 @@ def run_container_job(run, name_TA, DLS, first, final):
 def submit_BC(input_path, output_path, TA_tar_name, data_path):
 
     # job resources
-    lifetime = str(8)       # hr
+    lifetime = str(12)       # hr
     mem = str(2000)         # MB
 
     file = open(input_path + 'BeamCluster/submit_grid_job.sh', "w")
@@ -431,7 +431,7 @@ def submit_BC(input_path, output_path, TA_tar_name, data_path):
     file.write('\n')
 
     file.write('jobsub_submit --memory=' + mem + 'MB --expected-lifetime=' + lifetime + 'h -G annie --disk=${DISK_SPACE}GB ')
-    file.write('--resource-provides=usage_model=OFFSITE --blacklist=Omaha,Swan,Wisconsin ')
+    file.write('--resource-provides=usage_model=OFFSITE --blacklist=Omaha,Swan,Wisconsin,RAL ')
     file.write('$PART_FILES -f ${INPUT_PATH}/BeamCluster/run_container_job.sh -f ${INPUT_PATH}/' + TA_tar_name + ' ')
     file.write('-d OUTPUT $OUTPUT_FOLDER ')
     file.write('file://${INPUT_PATH}/BeamCluster/grid_job.sh BC_${RUN} ${PI} ${PF}\n')
@@ -499,6 +499,7 @@ def grid_BC(user, TA_tar_name, name_TA, input_path):
     file.write('if [ "$FILES_PRESENT" -ne "$NUM_PART_FILES" ]; then\n')
     file.write('    echo "Expected $NUM_PART_FILES files, but found $FILES_PRESENT. Creating a DANGER file and proceeding..." >> ${DUMMY_OUTPUT_FILE}\n')
     file.write('    touch /srv/DANGER_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('    echo "" >> /srv/DANGER_${PART_NAME}_${PI}_${PF}.txt\n')
     file.write('    ls -v /srv/Processed* >> /srv/DANGER_${PART_NAME}_${PI}_${PF}.txt\n')
     file.write('fi\n')
     file.write('\n')
