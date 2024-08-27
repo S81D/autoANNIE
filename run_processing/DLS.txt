@@ -1,0 +1,22 @@
+Daylight Savings dates and Beam runs
+
+--> if the run was taken during DLS, you must enable DLS = 1 in the eventbuilding scripts
+
+This information is based on the SQL entries on the .csv files contained in this directory
+
+
+2024
+---------
+March 10th, 2024 - November 3rd, 2024
+4759 - current (as of August 2024)
+
+run 4758 (laser) ran through DLS transition
+
+
+2023
+---------
+March 12th, 2023 - November 5th, 2023
+4208 - 4689
+
+run 4207 (cosmic) ran through DLS transition
+run 4690 (laser) ran through DLS transition
