@@ -98,7 +98,7 @@ usage_verbose_BC = """
 # runs_to_run = runs you would like to run the BC toolchain over. It will ask you to enter one at a time
 
 # Grid job specifications:
-# -- lifetime: 8hr
+# -- lifetime: 12hr
 # -- memory: 2GB
 # -- disk: 10GB for BC (baseline, plus more depending on number of part files)
 #########################################################################################
@@ -311,7 +311,7 @@ if which_mode == '2':        # BeamCluster
             parts_i, parts_f = helper_script.BC_breakup(runs_to_run[i], data_path, BC_job_size)
             n_jobs = len(parts_i)
 
-            disk_space_factor = str(int(((n_jobs*BC_job_size*8)/1000) + 10))
+            disk_space_factor = str(int(((BC_job_size*8)/1000) + 8))
             
             # initial submission
             if BC_check[i] == True and BC_resubs[i] == 0:
