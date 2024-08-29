@@ -125,7 +125,7 @@ if which_mode == '1':      # Event building mode
     print('\nDoubling checking on the runs you submitted... We need to make sure there is RAWData and the run did not occur during a DLS transition period...\n')
     runs_to_run = []; DLS = []    # final lists to be used in event building
     for i in range(len(runs_to_run_user)):
-        if os.path.isdir(raw_path + runs_to_run_user[i] + '/'):# and DLS_values[i] != -9999:     # -9999 = runs that occured during DLS transition
+        if os.path.isdir(raw_path + runs_to_run_user[i] + '/'):
             if DLS_values[i] != -9999:     # -9999 = runs that occured during DLS transition
                 runs_to_run.append(runs_to_run_user[i])
                 DLS.append(str(DLS_values[i]))
