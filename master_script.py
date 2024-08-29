@@ -77,9 +77,8 @@ print('\n')
 usage_verbose = """
 #########################################################################################
 # ******* Event Building mode ********
-# args: --DLS --step_size --runs_to_run
+# args: --step_size --runs_to_run
 
-# DLS = Enter 1 if building runs that occured during Daylight Savings, 0 if not - this is only relevant for the MRD
 # step_size = number of part files per job for event building
 # runs_to_run = runs you would like to event build. It will ask you to enter one at a time
 
@@ -109,11 +108,33 @@ if which_mode == '1':      # Event building mode
 
     print(usage_verbose, '\n')
 
+    # First load in DLS information
+    print('Loading DLS information...\n')
+    DLS_file = np.loadtxt('ANNIE_SQL_RUNS.txt', delimiter='\t', skiprows=1, dtype=int)
+
     # user provided arguments
-    DLS = input('Please specify if this run was taken during Daylight Savings (1 if yes, 0 if no):     ')
     step_size = int(input('Please specify the job part file size (3-4 is recommended):     '))
     resub_step_size = 1    # not provided by user - manually set for resubmissions
-    runs_to_run = helper_script.get_runs_from_user()
+    runs_to_run_user = helper_script.get_runs_from_user()
+
+    # pair DLS info for each run selected
+    run_to_DLS = {str(row[0]): row[2] for row in DLS_file}
+    DLS_values = [run_to_DLS.get(run, None) for run in runs_to_run_user]
+
+    # DLS
+    print('\nDoubling checking on the runs you submitted... We need to make sure there is RAWData and the run did not occur during a DLS transition period...\n')
+    runs_to_run = []; DLS = []    # final lists to be used in event building
+    for i in range(len(runs_to_run_user)):
+        if os.path.isdir(raw_path + runs_to_run_user[i] + '/'):# and DLS_values[i] != -9999:     # -9999 = runs that occured during DLS transition
+            if DLS_values[i] != -9999:     # -9999 = runs that occured during DLS transition
+                runs_to_run.append(runs_to_run_user[i])
+                DLS.append(str(DLS_values[i]))
+            else:
+                print('Run ' + runs_to_run_user[i] + ' occured during DLS transition - removing from the list')
+        else:
+            print('Run ' + runs_to_run_user[i] + ' does not have any RAWData!!! Removing from the list')
+    
+    time.sleep(1)
     
     # -------------------------------------------------------------
     print('\n\n\n')
@@ -122,7 +143,6 @@ if which_mode == '1':      # Event building mode
     print('*************************************************\n')
     
     print('The following arguments have been provided:\n')
-    print('  - DLS:  ' + str(DLS))
     print('  - Job part file size:  ' + str(step_size))
     print('  - Job re-submission part file size:  ' + str(resub_step_size))
     print('  - Runs to run: ', runs_to_run)
@@ -184,7 +204,7 @@ if which_mode == '1':      # Event building mode
         # omit the runs that have some part files in /scratch
         exists_and_contains = os.path.exists(output_path + runs_to_run[i] + "/") and any(file.startswith('Processed') and not file.endswith(".data") for file in os.listdir(output_path + runs_to_run[i] + "/"))
         if exists_and_contains == False:
-            os.system('python3 automated_submission.py ' + user + ' ' + runs_to_run[i] + ' n ' + str(small_step) + ' ' + DLS + ' ' + TA_tar_name + ' ' + TA_folder + ' ' + scratch_path + ' ' + output_path + ' ' + raw_path + ' ' + trig_path + ' ' + beamfetcher_path)   # no re-run
+            os.system('python3 automated_submission.py ' + user + ' ' + runs_to_run[i] + ' n ' + str(small_step) + ' ' + DLS[i] + ' ' + TA_tar_name + ' ' + TA_folder + ' ' + scratch_path + ' ' + output_path + ' ' + raw_path + ' ' + trig_path + ' ' + beamfetcher_path)   # no re-run
             time.sleep(3)
         else:
             print('\n' + runs_to_run[i] + ' processed files present in /scratch, not submitting this run in first batch...\n')
@@ -217,7 +237,7 @@ if which_mode == '1':      # Event building mode
                 reprocess = helper_script.missing_scratch(runs_to_run[i], raw_path, output_path)
                 time.sleep(1)
                 if reprocess == True:   # if there are missing files in scratch, re-submit
-                    os.system('python3 automated_submission.py ' + user + ' ' + runs_to_run[i] + ' y ' + str(resub_step_size) + ' ' + DLS + ' ' + TA_tar_name + ' ' + TA_folder + ' ' + scratch_path + ' ' + output_path + ' ' + raw_path + ' ' + trig_path + ' ' + beamfetcher_path)
+                    os.system('python3 automated_submission.py ' + user + ' ' + runs_to_run[i] + ' y ' + str(resub_step_size) + ' ' + DLS[i] + ' ' + TA_tar_name + ' ' + TA_folder + ' ' + scratch_path + ' ' + output_path + ' ' + raw_path + ' ' + trig_path + ' ' + beamfetcher_path)
                     resubs[i] += 1
                 else:                   # if there aren't any missing files, transfer
                     if resubs[i] != -1:
