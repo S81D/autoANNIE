@@ -4,13 +4,12 @@ import pandas as pd
 
 print('\nLoading information... (this may take a minute)\n')
 
-df = pd.read_csv('ANNIE_SQL_2024.csv', header = 0, dtype = str, skiprows = 1)
+df = pd.read_csv('ANNIE_SQL_RUNS.csv', header = 0, dtype = str, skiprows = 1)
 
-# 2023 and 2024
-# beam runs: 39 or 34
+# beam runs: 39/34 (new) or 3 (old DAQ)
 beam_runs = []
 for i in range(len(df)):
-    if df.T[i][1] == '39' or df.T[i][1] == '34':
+    if df.T[i][1] == '39' or df.T[i][1] == '34' or df.T[i][1] == '3':
         beam_runs.append(int(df.T[i][0]))
 
 
