@@ -1,7 +1,7 @@
 # master script for automated event building runs and running the BeamClusterAnalysis toolchain to create root files containing ANNIEEvent information
 
 # Author: Steven Doran
-# Date: August 2024
+# Date: September 2024
 
 import os
 import time
