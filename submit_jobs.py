@@ -529,7 +529,7 @@ def grid_BC(user, TA_tar_name, name_TA, input_path):
 
     file.write('# cleanup and move files to $CONDOR_OUTPUT after leaving singularity environment\n')
     file.write('echo "Moving the output files to CONDOR OUTPUT..." >> ${DUMMY_OUTPUT_FILE}\n')
-    file.write('${JSB_TMP}/ifdh.sh cp -D /srv/*.txt $CONDOR_DIR_OUTPUT         # log files\n')
+    file.write('${JSB_TMP}/ifdh.sh cp -D /srv/logfile*.txt $CONDOR_DIR_OUTPUT     # log files\n')
     file.write('${JSB_TMP}/ifdh.sh cp -D /srv/*.ntuple.root $CONDOR_DIR_OUTPUT    # Modify: any .root files etc.. that are produced from your toolchain\n')
     file.write('${JSB_TMP}/ifdh.sh cp -D /srv/*.lappd.root $CONDOR_DIR_OUTPUT     # LAPPD BeamCluster\n')
     file.write('${JSB_TMP}/ifdh.sh cp -D /srv/FilteredAllLAPPDData_${PART_NAME}_${PI}_${PF} $CONDOR_DIR_OUTPUT    # Filtered LAPPD Data\n')
