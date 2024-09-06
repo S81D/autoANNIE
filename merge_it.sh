@@ -11,6 +11,9 @@ if [ "$WHICH" == "beamfetcher" ]; then
 elif [ "$WHICH" == "BC" ]; then
     FILE_NAME="BeamCluster"
     TREE_NAME="Event"
+elif [ "$WHICH" == "LAPPD" ]; then
+    FILE_NAME="LAPPDBeamCluster"
+    TREE_NAME="Event"
 fi
 
 singularity shell ${BIND} /cvmfs/singularity.opensciencegrid.org/anniesoft/toolanalysis\:latest/ << EOF
@@ -28,6 +31,11 @@ if [ "$WHICH" == "BC" ]; then
     mv BeamCluster_$RUN.root BeamCluster/
     echo ""
     ls -lrth BeamCluster/BeamCluster*
+    echo ""
+elif [ "$WHICH" == "LAPPD" ]; then
+    mv LAPPDBeamCluster_$RUN.root BeamCluster/
+    echo ""
+    ls -lrth LAPPDBeamCluster/BeamCluster*
     echo ""
 fi
 
