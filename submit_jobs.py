@@ -634,7 +634,10 @@ def container_BC(name_TA, input_path):
 
     file.write('# Run the event filter for the LAPPD and MRD\n')
     file.write('rm configfiles/LAPPDProcessedFilter/list.txt\n')
-    file.write('\cp configfiles/BeamClusterAnalysis/my_input.txt configfiles/LAPPDProcessedFilter/.\n')
+    file.write('\cp configfiles/BeamClusterAnalysis/my_input.txt configfiles/LAPPDProcessedFilter/list.txt\n')
+    file.write('echo "configfiles/LAPPDProcessedFilter/list.txt:" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('cat configfiles/LAPPDProcessedFilter/list.txt >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('echo "" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
     file.write('./Analyse configfiles/LAPPDProcessedFilter/ToolChainConfig >> /srv/logfile_Filter_${PART_NAME}_${PI}_${PF}.txt 2>&1 \n')
     file.write('\n')
 
@@ -644,8 +647,8 @@ def container_BC(name_TA, input_path):
     file.write('cd configfiles/BeamClusterAnalysis\n')
     file.write('python3 configLAPPD.py ${PART_NAME} ${PI} ${PF}\n')
     file.write('cd ../../\n')
-    file.write('echo "File present in filtered my_inputs.txt:" >> /srv/logfile_BC_Filtered_${PART_NAME}_${PI}_${PF}.txt\n')
-    file.write('cat configfiles/BeamClusterAnalysis/my_inputs.txt >> /srv/logfile_BC_Filtered_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('echo "File present in filtered my_inputs.txt:" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('cat configfiles/BeamClusterAnalysis/my_inputs.txt >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
     file.write('echo "" >> /srv/logfile_BC_Filtered_${PART_NAME}_${PI}_${PF}.txt\n')
     file.write('./Analyse configfiles/BeamClusterAnalysis/ToolChainConfig >> /srv/logfile_BC_Filtered_${PART_NAME}_${PI}_${PF}.txt 2>&1 \n')
     file.write('\n')
