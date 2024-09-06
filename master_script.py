@@ -51,6 +51,9 @@ trig_path = processed_path + 'trigoverlap/'
 beamcluster_path = processed_path + 'BeamClusterTrees/'
 beamfetcher_path = processed_path + 'BeamFetcherV2/'
 lappd_EB_path = processed_path + 'LAPPD_EB_output/'            # contains two subdirectories: LAPPDTree and offsetFit
+lappd_BC_path = beamcluster_path + 'LAPPDBeamClusterTrees/'
+lappd_filter_path = processed_path + 'processed_EBV2_LAPPDFiltered/'
+mard_filter_path = processed_path + 'processed_EBV2_MRDFiltered/'
 
 raw_path = '/pnfs/annie/persistent/raw/raw/'
 
@@ -400,14 +403,30 @@ if which_mode == '2':        # BeamCluster
                     time.sleep(1)
 
                     # Second, merge the LAPPDBeamCluster files into one
-                    print('\nMerging BeamCluster files...\n')
+                    print('\nMerging LAPPDBeamCluster files...\n')
                     os.system('sh merge_it.sh ' + singularity + ' ' + BC_scratch_output_path + ' ' + runs_to_run[i] + ' ' + 'LAPPD')
                     time.sleep(1)
     
-                    # Then copy it
-                    os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path)
+                    # Then copy all the output files
+                    
+                    # BeamCluster
+                    print('\nTransferring BeamCluster files...\n')
+                    os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path + ' ' + 'BC' + ' ' + lappd_BC_path + ' ' + output_path + ' ' + lappd_filter_path + ' ' + mrd_filter_path)
                     check_count_BC += 1
                     complete_BC += 1
+                    time.sleep(1)
+
+                    # LAPPDBeamCluster
+                    os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path + ' ' + 'LAPPD' + ' ' + lappd_BC_path + ' ' + output_path + ' ' + lappd_filter_path + ' ' + mrd_filter_path)
+                    time.sleep(1)
+                    
+                    # Filtered files (LAPPD + MRD)
+                    print('\nTransferring Filtered datasets (MRD + LAPPD)...\n')
+                    os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path + ' ' + 'LAPPD' + ' ' + lappd_BC_path + ' ' + output_path + ' ' + lappd_filter_path + ' ' + mrd_filter_path)
+                    time.sleep(1)
+                    os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path + ' ' + 'LAPPD' + ' ' + lappd_BC_path + ' ' + output_path + ' ' + lappd_filter_path + ' ' + mrd_filter_path)
+                    time.sleep(1)
+                    
                 else:
                     print('\nRun ' + runs_to_run[i] + ' already transferred\n')
                     check_count_BC += 1
