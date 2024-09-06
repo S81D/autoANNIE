@@ -26,7 +26,7 @@ singularity = '-B/pnfs:/pnfs,/exp/annie/app/users/doran/temp_directory:/tmp,/exp
 TA_folder = 'EventBuilding/'                      # Folder that was tar-balled (Needs to be the same name as the ToolAnalysis directory in /exp/annie/app that will run TrigOverlap + BeamFetcherV2 toolchains)
 TA_tar_name = 'MyToolAnalysis_grid.tar.gz'        # name of tar-ball
 
-grid_sub_dir = 'EB_grid/'                         # input grid
+grid_sub_dir = 'autoANNIE/'                       # input grid
 grid_output = 'output/'                           # output grid
 
 '''@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'''
