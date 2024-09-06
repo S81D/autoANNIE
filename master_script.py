@@ -288,7 +288,7 @@ if which_mode == '2':        # BeamCluster
 
     print('\n\n\n')
     print('*************************************************')
-    print('          BeamClusterAnalysis initaited          ')
+    print('          BeamClusterAnalysis initiated          ')
     print('*************************************************\n')
     
     print('The following argument has been provided:\n')
@@ -307,6 +307,7 @@ if which_mode == '2':        # BeamCluster
     os.system('rm BeamCluster/grid_job.sh')
     os.system('rm BeamCluster/run_container_job.sh')
     os.system('rm BeamCluster/BeamCluster*.root')
+    os.system('rm BeamCluster/LAPPDBeamCluster*.root')
     time.sleep(1)
 
     BC_resubs = [0 for i in range(len(runs_to_run))]
@@ -397,6 +398,11 @@ if which_mode == '2':        # BeamCluster
                     print('\nMerging BeamCluster files...\n')
                     os.system('sh merge_it.sh ' + singularity + ' ' + BC_scratch_output_path + ' ' + runs_to_run[i] + ' ' + 'BC')
                     time.sleep(1)
+
+                    # Second, merge the LAPPDBeamCluster files into one
+                    print('\nMerging BeamCluster files...\n')
+                    os.system('sh merge_it.sh ' + singularity + ' ' + BC_scratch_output_path + ' ' + runs_to_run[i] + ' ' + 'LAPPD')
+                    time.sleep(1)
     
                     # Then copy it
                     os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path)
@@ -421,5 +427,6 @@ if which_mode == '2':        # BeamCluster
     os.system('rm BeamCluster/grid_job.sh')
     os.system('rm BeamCluster/run_container_job.sh')
     os.system('rm BeamCluster/BeamCluster*.root')
+    os.system('rm BeamCluster/LAPPDBeamCluster*.root')
     time.sleep(1)
     print('\nExiting...\n')
