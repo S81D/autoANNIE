@@ -422,9 +422,9 @@ if which_mode == '2':        # BeamCluster
                     
                     # Filtered files (LAPPD + MRD)
                     print('\nTransferring Filtered datasets (MRD + LAPPD)...\n')
-                    os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path + ' ' + 'LAPPD' + ' ' + lappd_BC_path + ' ' + output_path + ' ' + lappd_filter_path + ' ' + mrd_filter_path)
+                    os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path + ' ' + 'LAPPD_filter' + ' ' + lappd_BC_path + ' ' + output_path + ' ' + lappd_filter_path + ' ' + mrd_filter_path)
                     time.sleep(1)
-                    os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path + ' ' + 'LAPPD' + ' ' + lappd_BC_path + ' ' + output_path + ' ' + lappd_filter_path + ' ' + mrd_filter_path)
+                    os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path + ' ' + 'MRD_filter' + ' ' + lappd_BC_path + ' ' + output_path + ' ' + lappd_filter_path + ' ' + mrd_filter_path)
                     time.sleep(1)
                     
                 else:
