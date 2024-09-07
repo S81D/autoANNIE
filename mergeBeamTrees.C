@@ -33,7 +33,7 @@ void mergeBeamTrees(const std::string &directory, int runNumber, const std::stri
                 chain.Add(filePath.c_str());
             }
             // LAPPD BeamCluster root files
-            else if (file_name == "LAPPDBeamCluster" && fname.BeginsWith(file_name + "_") && fname.EndsWith(".lappd.root")) {
+            else if (file_name == "LAPPDBeamCluster" && fname.EndsWith(".lappd.root")) {
                 std::string filePath = runDirectory + fname.Data();
                 std::cout << "Adding LAPPD file: " << filePath << std::endl;
                 chain.Add(filePath.c_str());
