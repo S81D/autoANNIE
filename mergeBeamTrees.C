@@ -26,17 +26,17 @@ void mergeBeamTrees(const std::string &directory, int runNumber, const std::stri
         TIter next(files);
         while ((file = (TSystemFile*)next())) {
             fname = file->GetName();
-            // Check if the file name meets the criteria
-            if (!file->IsDirectory() && fname.BeginsWith(file_name + "_") && fname.EndsWith(".root")) {
-                // Determine if it's an LAPPD file
-                bool isLappdFile = fname.EndsWith(".lappd.root");
-                // If the file_name is LAPPDBeamCluster, only process .lappd.root files
-                // If the file_name is something else, exclude .lappd.root files
-                if ((file_name == "LAPPDBeamCluster" && isLappdFile) || (file_name != "LAPPDBeamCluster" && !isLappdFile)) {
-                    std::string filePath = runDirectory + fname.Data();
-                    std::cout << "Adding file: " << filePath << std::endl;
-                    chain.Add(filePath.c_str());
-                }
+            // Normal BeamCluster + beamfetcher root files
+            if (file_name != "LAPPDBeamCluster" && fname.BeginsWith(file_name + "_") && fname.EndsWith(".root") && !fname.EndsWith(".lappd.root")) {
+                std::string filePath = runDirectory + fname.Data();
+                std::cout << "Adding file: " << filePath << std::endl;
+                chain.Add(filePath.c_str());
+            }
+            // LAPPD BeamCluster root files
+            else if (file_name == "LAPPDBeamCluster" && fname.BeginsWith(file_name + "_") && fname.EndsWith(".lappd.root")) {
+                std::string filePath = runDirectory + fname.Data();
+                std::cout << "Adding LAPPD file: " << filePath << std::endl;
+                chain.Add(filePath.c_str());
             }
         }
     }
