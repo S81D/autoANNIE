@@ -53,7 +53,7 @@ beamfetcher_path = processed_path + 'BeamFetcherV2/'
 lappd_EB_path = processed_path + 'LAPPD_EB_output/'            # contains two subdirectories: LAPPDTree and offsetFit
 lappd_BC_path = beamcluster_path + 'LAPPDBeamClusterTrees/'
 lappd_filter_path = processed_path + 'processed_EBV2_LAPPDFiltered/'
-mard_filter_path = processed_path + 'processed_EBV2_MRDFiltered/'
+mrd_filter_path = processed_path + 'processed_EBV2_MRDFiltered/'
 
 raw_path = '/pnfs/annie/persistent/raw/raw/'
 
