@@ -35,7 +35,7 @@ if [ "$WHICH" == "BC" ]; then
 elif [ "$WHICH" == "LAPPD" ]; then
     mv LAPPDBeamCluster_$RUN.root BeamCluster/
     echo ""
-    ls -lrth LAPPDBeamCluster/BeamCluster*
+    ls -lrth BeamCluster/LAPPDBeamCluster*
     echo ""
 fi
 
