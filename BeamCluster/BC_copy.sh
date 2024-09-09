@@ -29,12 +29,14 @@ elif [ "$WHICH" == "LAPPD" ]; then
   
 elif [ "$WHICH" == "LAPPD_filter" ]; then
   mkdir -p $lappd_filter_path/R$run
+  chmod 777 $lappd_filter_path/R$run
   ifdh cp $scratch_output_path/$run/FilteredAllLAPPDData* $lappd_filter_path/R$run/
   echo ""
   ls -lrth $lappd_filter_path/R$run/
   echo ""
 elif [ "$WHICH" == "MRD_filter" ]; then
   mkdir -p $mrd_filter_path/R$run
+  chmod 777 $mrd_filter_path/R$run
   ifdh cp $scratch_output_path/$run/FilteredMRDData* $mrd_filter_path/R$run/
   echo ""
   ls -lrth $mrd_filter_path/R$run/
