@@ -116,7 +116,7 @@ if which_mode == '1':      # Event building mode
     DLS_file = np.loadtxt('ANNIE_SQL_RUNS.txt', delimiter='\t', skiprows=1, dtype=int)
 
     # user provided arguments
-    step_size = int(input('Please specify the job part file size (3-4 is recommended):     '))
+    step_size = int(input('Please specify the job part file size (3+2 is recommended):     '))
     resub_step_size = 1    # not provided by user - manually set for resubmissions
     runs_to_run_user = helper_script.get_runs_from_user()
 
