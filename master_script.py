@@ -5,6 +5,7 @@
 
 import os
 import time
+import numpy as np
 import helper_script
 import submit_jobs
 
