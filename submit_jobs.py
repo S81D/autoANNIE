@@ -114,6 +114,10 @@ def grid_job(run, user, TA_tar_name, name_TA, first, final):
     
     file.write('\n')
 
+    file.write('# create bind mountable /tmp directory \n')
+    file.write('mkdir tmp \n')
+    file.write('\n')
+
     file.write('ls -v /srv/RAWData* >> my_files.txt \n')
     file.write('echo "Trig overlap files present:" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('ls -v /srv/Trig* >> ${DUMMY_OUTPUT_FILE} \n')
@@ -137,7 +141,7 @@ def grid_job(run, user, TA_tar_name, name_TA, first, final):
     else:
         container_job = 'run_container_job_' + run + '.sh'
 
-    file.write('result=$(singularity exec -B/srv:/srv /cvmfs/singularity.opensciencegrid.org/anniesoft/toolanalysis\:latest/ $CONDOR_DIR_INPUT/' + container_job + ' $PART_NAME) \n')
+    file.write('result=$(singularity exec -B/srv:/srv,/srv/tmp:/tmp /cvmfs/singularity.opensciencegrid.org/anniesoft/toolanalysis\:latest/ $CONDOR_DIR_INPUT/' + container_job + ' $PART_NAME) \n')
     file.write('\n')
 
     file.write('echo "Moving the output files to CONDOR OUTPUT..." >> ${DUMMY_OUTPUT_FILE} \n')
