@@ -4,7 +4,7 @@ import sys
 
 
 # this script is for actually submitting the job to the FermiGrid
-def submit_grid_job(run, p_start, p_end, input_path, output_path, TA_tar_name, disk_space, raw_path, trig_path, beamfetcher_path, first, final):
+def submit_grid_job(run, p_start, p_end, input_path, output_path, TA_tar_name, disk_space, raw_path, trig_path, beamfetcher_path, first, final, node_loc):
     
     if first == True and final == True:
         file = open('submit_grid_job_' + run + '.sh', "w")
@@ -27,7 +27,10 @@ def submit_grid_job(run, p_start, p_end, input_path, output_path, TA_tar_name, d
     file.write('\n')
 
     # Default (offsite resources)
-    file.write('jobsub_submit --memory=4000MB --expected-lifetime=6h -G annie --disk=' + disk_space + 'GB --resource-provides=usage_model=OFFSITE --blacklist=Omaha,Swan,Wisconsin ')
+    if node_loc == "OFFSITE":
+        file.write('jobsub_submit --memory=4000MB --expected-lifetime=6h -G annie --disk=' + disk_space + 'GB --resource-provides=usage_model=OFFSITE --blacklist=Omaha,Swan,Wisconsin ')
+    elif node_loc == "ONSITE":
+        file.write('jobsub_submit --memory=4000MB --expected-lifetime=6h -G annie --disk=' + disk_space + 'GB --resource-provides=usage_model=DEDICATED,OPPORTUNISTIC ')
     
     for i in range(int(p_start), int(p_end)+1):
         file.write('-f ${RAWDATA_PATH}/RAWDataR' + run + 'S0p' + str(i) + ' ')
