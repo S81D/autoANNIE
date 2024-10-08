@@ -81,10 +81,11 @@ print('\n')
 usage_verbose = """
 #########################################################################################
 # ******* Event Building mode ********
-# args: --step_size --runs_to_run
+# args: --step_size --runs_to_run --node_loc
 
 # step_size = number of part files per job for event building
 # runs_to_run = runs you would like to event build. It will ask you to enter one at a time
+# node_loc = run OFFSITE or ONSITE (FermiGrid) jobs
 
 # Grid job specifications:
 # -- lifetime: 6hr
@@ -119,6 +120,14 @@ if which_mode == '1':      # Event building mode
     # user provided arguments
     step_size = int(input('Please specify the job part file size (3+2 is recommended):     '))
     resub_step_size = 1    # not provided by user - manually set for resubmissions
+    which_node = int(input('OFFSITE (1) or ONSITE (2)  (FermiGrid (2) is recommended):     '))
+    if which_node == 1:
+        node_loc = 'OFFSITE'
+    elif which_node == 2:
+        node_loc == 'ONSITE'
+    else:
+        print('\nWRONG INPUT, RE-RUN SCRIPT\n')
+        exit()
     runs_to_run_user = helper_script.get_runs_from_user()
 
     # pair DLS info for each run selected
@@ -208,7 +217,7 @@ if which_mode == '1':      # Event building mode
         # omit the runs that have some part files in /scratch
         exists_and_contains = os.path.exists(output_path + runs_to_run[i] + "/") and any(file.startswith('Processed') and not file.endswith(".data") for file in os.listdir(output_path + runs_to_run[i] + "/"))
         if exists_and_contains == False:
-            os.system('python3 automated_submission.py ' + user + ' ' + runs_to_run[i] + ' n ' + str(small_step) + ' ' + DLS[i] + ' ' + TA_tar_name + ' ' + TA_folder + ' ' + scratch_path + ' ' + output_path + ' ' + raw_path + ' ' + trig_path + ' ' + beamfetcher_path)   # no re-run
+            os.system('python3 automated_submission.py ' + user + ' ' + runs_to_run[i] + ' n ' + str(small_step) + ' ' + DLS[i] + ' ' + TA_tar_name + ' ' + TA_folder + ' ' + scratch_path + ' ' + output_path + ' ' + raw_path + ' ' + trig_path + ' ' + beamfetcher_path + ' ' + node_loc)   # no re-run
             time.sleep(3)
         else:
             print('\n' + runs_to_run[i] + ' processed files present in /scratch, not submitting this run in first batch...\n')
@@ -241,7 +250,7 @@ if which_mode == '1':      # Event building mode
                 reprocess = helper_script.missing_scratch(runs_to_run[i], raw_path, output_path)
                 time.sleep(1)
                 if reprocess == True:   # if there are missing files in scratch, re-submit
-                    os.system('python3 automated_submission.py ' + user + ' ' + runs_to_run[i] + ' y ' + str(resub_step_size) + ' ' + DLS[i] + ' ' + TA_tar_name + ' ' + TA_folder + ' ' + scratch_path + ' ' + output_path + ' ' + raw_path + ' ' + trig_path + ' ' + beamfetcher_path)
+                    os.system('python3 automated_submission.py ' + user + ' ' + runs_to_run[i] + ' y ' + str(resub_step_size) + ' ' + DLS[i] + ' ' + TA_tar_name + ' ' + TA_folder + ' ' + scratch_path + ' ' + output_path + ' ' + raw_path + ' ' + trig_path + ' ' + beamfetcher_path + ' ' + node_loc)
                     resubs[i] += 1
                 else:                   # if there aren't any missing files, transfer
                     if resubs[i] != -1:
