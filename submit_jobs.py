@@ -26,9 +26,10 @@ def submit_grid_job(run, p_start, p_end, input_path, output_path, TA_tar_name, d
     file.write('mkdir -p $OUTPUT_FOLDER \n')
     file.write('\n')
 
-    # Default (offsite resources)
+    # offsite resources
     if node_loc == "OFFSITE":
         file.write('jobsub_submit --memory=4000MB --expected-lifetime=6h -G annie --disk=' + disk_space + 'GB --resource-provides=usage_model=OFFSITE --blacklist=Omaha,Swan,Wisconsin ')
+    # FermiGrid
     elif node_loc == "ONSITE":
         file.write('jobsub_submit --memory=4000MB --expected-lifetime=6h -G annie --disk=' + disk_space + 'GB --resource-provides=usage_model=DEDICATED,OPPORTUNISTIC ')
     
