@@ -15,6 +15,7 @@ output_path = sys.argv[9]                                     # grid output loca
 raw_path = sys.argv[10]                                       # path to rawdata
 trig_path = sys.argv[11]                                      # path to trig overlap tar balls
 beamfetcher_path = sys.argv[12]                               # path to beamfetcher files
+node_loc = sys.argv[13]                                       # OFFSITE or ONSITE (FermiGrid) nodes
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
@@ -83,7 +84,7 @@ if missing == 'n':
         submit_jobs.run_container_job(run, name_TA, DLS, first, final)
 
         # We can then create the job_submit script that will send our job (with files) to the grid
-        submit_jobs.submit_grid_job(run, part_list[0][i], part_list[1][i], input_path, output_path, TA_tar_name, disk_space, raw_path, trig_path, beamfetcher_path, first, final)
+        submit_jobs.submit_grid_job(run, part_list[0][i], part_list[1][i], input_path, output_path, TA_tar_name, disk_space, raw_path, trig_path, beamfetcher_path, first, final, node_loc)
 
         # Lastly, we can execute the job submission script and send the job to the grid
         os.system('sh ' + sh_name)
@@ -176,7 +177,7 @@ if missing == 'y':
         submit_jobs.run_container_job(run, name_TA, DLS, first, final)
 
         # We can then create the job_submit script that will send our job (with files) to the grid
-        submit_jobs.submit_grid_job(run, part_list[0][i], part_list[1][i], input_path, output_path, TA_tar_name, disk_space, raw_path, trig_path, beamfetcher_path, first, final)
+        submit_jobs.submit_grid_job(run, part_list[0][i], part_list[1][i], input_path, output_path, TA_tar_name, disk_space, raw_path, trig_path, beamfetcher_path, first, final, node_loc)
 
         # Lastly, we can execute the job submission script and send the job to the grid
         os.system('sh ' + sh_name)
