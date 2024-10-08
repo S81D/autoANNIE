@@ -135,7 +135,7 @@ if which_mode == '1':      # Event building mode
     DLS_values = [run_to_DLS.get(run, None) for run in runs_to_run_user]
 
     # DLS
-    print('\nDoubling checking on the runs you submitted... We need to make sure there is RAWData and the run did not occur during a DLS transition period...\n')
+    print('\nDouble checking on the runs you submitted... We need to make sure there is RAWData and the run did not occur during a DLS transition period...\n')
     runs_to_run = []; DLS = []    # final lists to be used in event building
     for i in range(len(runs_to_run_user)):
         if os.path.isdir(raw_path + runs_to_run_user[i] + '/'):
@@ -150,7 +150,7 @@ if which_mode == '1':      # Event building mode
     time.sleep(1)
     
     # -------------------------------------------------------------
-    print('\n\n\n')
+    print('\n\n')
     print('*************************************************')
     print('        Automated EventBuilding initiated        ')
     print('*************************************************\n')
