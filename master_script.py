@@ -120,7 +120,6 @@ if which_mode == '1':      # Event building mode
     # user provided arguments
     step_size = int(input('Please specify the job part file size (3+2 is recommended):     '))
     resub_step_size = 1    # not provided by user - manually set for resubmissions
-    print('\n')
     which_node = int(input('OFFSITE (1) or ONSITE (2)  (FermiGrid (2) is recommended):     '))
     if which_node == 1:
         node_loc = 'OFFSITE'
