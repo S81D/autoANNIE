@@ -134,6 +134,12 @@ if which_mode == '1':      # Event building mode
     run_to_DLS = {str(row[0]): row[2] for row in DLS_file}
     DLS_values = [run_to_DLS.get(run, None) for run in runs_to_run_user]
 
+    # Exit if any user-specified run is not found in the ANNIE SQL txt file (means they haven't added the run to this file)
+    missing_runs = [run for run, dls_value in zip(runs_to_run_user, DLS_values) if dls_value is None]
+    if missing_runs:
+        print(f'\nERROR: The following runs were not found in the SQL text file: {", ".join(missing_runs)}\nPlease add these runs to the .txt file and re-run the scripts!\nExiting...\n')
+        exit()
+
     # DLS
     print('\nDouble checking on the runs you submitted... We need to make sure there is RAWData and the run did not occur during a DLS transition period...\n')
     runs_to_run = []; DLS = []    # final lists to be used in event building
