@@ -133,7 +133,7 @@ if which_mode == '1':      # Event building mode
     runs_to_run = []; DLS = []    # final lists to be used in event building
 
     # First make sure there is RawData available for the runs the user selected
-    raw_available_runs = helper_script.is_there_raw(runs_to_run_user)
+    raw_available_runs = helper_script.is_there_raw(runs_to_run_user, raw_path)
 
     # Secondly, grab DLS info from the SQL txt file
     dls_vals = helper_script.read_SQL(SQL_file, raw_available_runs)
