@@ -23,7 +23,7 @@ def get_runs_from_user():
 def is_there_raw(runs_to_run_user, raw_path):
     temp_runs = []
     for i in range(len(runs_to_run_user)):
-        if not os.path.isdir(raw_path + runs_to_run_user[i] + '/'):
+        if os.path.isdir(raw_path + runs_to_run_user[i] + '/'):
             temp_runs.append(runs_to_run_user[i])
         else:
             print('Run ' + runs_to_run_user[i] + ' does not have any RAWData!!! Removing from the list')
