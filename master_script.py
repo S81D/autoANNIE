@@ -1,7 +1,7 @@
 # master script for automated event building runs and running the BeamClusterAnalysis toolchain to create root files containing ANNIEEvent information
 
 # Author: Steven Doran
-# Date: September 2024
+# Date: October 2024
 
 import os
 import time
@@ -29,6 +29,8 @@ TA_tar_name = 'MyToolAnalysis_grid.tar.gz'        # name of tar-ball
 
 grid_sub_dir = 'autoANNIE/'                       # input grid
 grid_output = 'output/'                           # output grid
+
+SQL_file = 'ANNIE_SQL_RUNS.txt'                   # SQL filename
 
 '''@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'''
 
@@ -113,14 +115,10 @@ if which_mode == '1':      # Event building mode
 
     print(usage_verbose, '\n')
 
-    # First load in DLS information
-    print('Loading DLS information...\n')
-    DLS_file = np.loadtxt('ANNIE_SQL_RUNS.txt', delimiter='\t', skiprows=1, dtype=int)
-
     # user provided arguments
     step_size = int(input('Please specify the job part file size (3+2 is recommended):     '))
     resub_step_size = 1    # not provided by user - manually set for resubmissions
-    which_node = int(input('OFFSITE (1) or ONSITE (2)  (FermiGrid (2) is recommended):     '))
+    which_node = int(input('OFFSITE (1) or ONSITE (2)  (OFFSITE (1) is recommended):     '))
     if which_node == 1:
         node_loc = 'OFFSITE'
     elif which_node == 2:
@@ -130,28 +128,19 @@ if which_mode == '1':      # Event building mode
         exit()
     runs_to_run_user = helper_script.get_runs_from_user()
 
-    # pair DLS info for each run selected
-    run_to_DLS = {str(row[0]): row[2] for row in DLS_file}
-    DLS_values = [run_to_DLS.get(run, None) for run in runs_to_run_user]
 
-    # Exit if any user-specified run is not found in the ANNIE SQL txt file (means they haven't added the run to this file)
-    missing_runs = [run for run, dls_value in zip(runs_to_run_user, DLS_values) if dls_value is None]
-    if missing_runs:
-        print(f'\nERROR: The following runs were not found in the SQL text file: {", ".join(missing_runs)}\nPlease add these runs to the .txt file and re-run the scripts!\nExiting...\n')
-        exit()
-
-    # DLS
-    print('\nDouble checking on the runs you submitted... We need to make sure there is RAWData and the run did not occur during a DLS transition period...\n')
+    print('\nVetting the runs you submitted...\n')
     runs_to_run = []; DLS = []    # final lists to be used in event building
-    for i in range(len(runs_to_run_user)):
-        if os.path.isdir(raw_path + runs_to_run_user[i] + '/'):
-            if DLS_values[i] != -9999:     # -9999 = runs that occured during DLS transition
-                runs_to_run.append(runs_to_run_user[i])
-                DLS.append(str(DLS_values[i]))
-            else:
-                print('Run ' + runs_to_run_user[i] + ' occured during DLS transition - removing from the list')
-        else:
-            print('Run ' + runs_to_run_user[i] + ' does not have any RAWData!!! Removing from the list')
+
+    # First make sure there is RawData available for the runs the user selected
+    raw_available_runs = helper_script.is_there_raw(runs_to_run_user)
+
+    # Secondly, grab DLS info from the SQL txt file
+    dls_vals = helper_script.read_SQL(SQL_file, raw_available_runs)
+    for i in range(len(raw_available_runs)):
+        if dls_vals[i] != -9999:     # -9999 = runs that occured during DLS transition and were passed to the master script to be removed
+            runs_to_run.append(runs_to_run_user[i])
+            DLS.append(str(dls_vals[i]))
     
     time.sleep(1)
     

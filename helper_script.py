@@ -1,5 +1,7 @@
 import sys, os
 import time
+import pytz
+from datetime import datetime
 
 # --------------------------------------------------------------- #
 # Some helpful functions to call for the automated event building #
@@ -15,7 +17,188 @@ def get_runs_from_user():
             break
         runs.append(user_input)
     return runs
+
+
+# Check if there isn't RawData for any of the runs and omit that run from the list
+def is_there_raw(runs_to_run_user):
+    temp_runs = []
+    for i in range(len(runs_to_run_user)):
+        if not os.path.isdir(raw_path + runs_to_run_user[i] + '/'):
+            temp_runs.append(runs_to_run_user[i])
+        else:
+            print('Run ' + runs_to_run_user[i] + ' does not have any RAWData!!! Removing from the list')
+    return temp_runs
+
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+# Grab SQL, extract run information, and return DLS values accordingly for the MRDDataDecoder tool
+def read_SQL(SQL_file, runs):
     
+    print('\n')
+    run_data = {}
+    dls_values = []
+
+    # Check if the SQL file exists
+    if not os.path.isfile(SQL_file):
+        print(f"\nERROR: The SQL file '{SQL_file}' does not exist. Please follow the README and generate an SQL txt file for the event building.\nExiting...\n")
+        exit()
+
+    # Set timezone for Chicago (MRD)
+    chicago_timezone = pytz.timezone('America/Chicago')
+
+    # define daylight savings periods (THIS IS SO CONFUSING)
+    dst_periods = {
+        2021: (datetime(2021, 3, 14, 2, 0, 0), datetime(2021, 11, 7, 1, 0, 0)),
+        2022: (datetime(2022, 3, 13, 2, 0, 0), datetime(2022, 11, 6, 1, 0, 0)),
+        2023: (datetime(2023, 3, 12, 2, 0, 0), datetime(2023, 11, 5, 1, 0, 0)),
+        2024: (datetime(2024, 3, 10, 2, 0, 0), datetime(2024, 11, 3, 1, 0, 0)),
+    }
+
+    with open(SQL_file, 'r') as file:
+        lines = file.readlines()[2:] 
+        for line in lines:
+            columns = [col.strip() for col in line.split('|')]
+            if len(columns) > 1:
+                runnum = columns[1]
+                runconfig = columns[5]   # run type
+                start = columns[3]       # UTC start time
+                stop = columns[4]        # UTC stop time
+
+                if runnum in runs:
+                    # runs after 3869 have microsecond precision in their timestamps
+                    try:
+                        start_dt = datetime.strptime(start, "%Y-%m-%d %H:%M:%S.%f")
+                        stop_dt = datetime.strptime(stop, "%Y-%m-%d %H:%M:%S.%f") if stop else None
+                    # for earlier runs, they are recorded to the nearest second
+                    except ValueError:
+                        start_dt = datetime.strptime(start, "%Y-%m-%d %H:%M:%S")
+                        stop_dt = datetime.strptime(stop, "%Y-%m-%d %H:%M:%S") if stop else None
+                    
+                    # Remove fractional seconds by rounding to the nearest second to make them all the same
+                    run_data[runnum] = {
+                        'runconfig': int(runconfig) if runconfig.isdigit() else None,
+                        'start': start_dt.replace(microsecond=0),
+                        'stop': stop_dt.replace(microsecond=0) if stop_dt else None
+                    }
+
+
+    # if run isn't in SQL txt file, force the user to update it so we have the necessary DLS information
+    missing_runs = [run for run in runs if run not in run_data]
+    if missing_runs:
+        print(f'ERROR: The following runs were not found in the SQL text file: {", ".join(missing_runs)}\n'
+              f'Please add these runs to the .txt file and re-run the script.\nExiting...\n')
+        exit()
+
+
+    runconfigs = [data['runconfig'] for data in run_data.values() if data['runconfig'] is not None]
+    unique_runconfigs = set(runconfigs)
+
+    # beam runs
+    beam_run_types = {39, 34, 3}
+    
+    # Check for consistent run configurations: we dont want to process beam runs with the same grid resources
+    if len(unique_runconfigs) > 1:
+        if not unique_runconfigs.issubset(beam_run_types):
+            print(f'ERROR: The runs have inconsistent run types: {unique_runconfigs}\n'
+                  f'Please ensure all runs are the same (except for beam runs: 39, 34, or 3)')
+            proceed = input("\nWould you like to continue anyway? (yes/no): ")
+            if proceed.lower() != 'yes':
+                print("\nExiting...\n")
+                return
+            
+
+    # convert to UTC to CDT and then check if its within a DLS period
+    for run, config in run_data.items():
+        
+        start_cdt = config['start'].astimezone(chicago_timezone)
+        stop_cdt = config['stop'].astimezone(chicago_timezone) if config['stop'] else None
+
+        # Check if the timestamps are in daylight saving time
+        year = start_cdt.year
+        if year in dst_periods:
+            dst_start, dst_stop = dst_periods[year]
+            
+            # Localize the DST start and stop times to the Chicago timezone
+            dst_start = chicago_timezone.localize(dst_start)
+            dst_stop = chicago_timezone.localize(dst_stop)
+
+            # local start time in a DLS period (True or False)
+            in_dls_start = dst_start <= start_cdt < dst_stop
+            
+            if stop_cdt:                      # for stop times that aren't blank
+                in_dls_stop = dst_start <= stop_cdt < dst_stop     # local stop time in a DLS period  (True or False)
+            else:
+                in_dls_stop = in_dls_start    # if its blank, assign it the same as the start (may be problematic but it wont happen very often)
+
+
+            # Update DLS status
+            if in_dls_start:                                  # if start time is in DLS
+                if in_dls_stop:                               #     if stop time is in DLS
+                    dls_status = 1                            #          run was during DLS
+                else:                                         #     if stop time wasn't in DLS (but start was)
+                    dls_status = -9999                        #          run occured during a transition period
+
+            else:                                             # if start time was not in DLS
+                if in_dls_stop:                               #     if stop time is in DLS (but start wasn't)
+                    dls_status = -9999                        #          run occured during a transition period
+                else:                                         #     if stop time wasn't in DLS
+                    dls_status = 0                            #          run was not during DLS
+
+
+        # Add DLS status to run_data
+        run_data[run]['DLS'] = dls_status
+
+        # Prompt error if the run occured during a DLS period
+        if dls_status == -9999:
+            print('\n\n\n########################################################################')
+            print(f"\nDANGER!!! {run}: Run occurred during Daylight Saving Time transition: start ({start_cdt}) and stop ({stop_cdt}) do not match.\n")
+            
+            choice = input("Type (1) to exit and re-run the script with an updated list. Type (2) to proceed and manually enter the DLS variable (risky!): ")
+            
+            if choice == '1':
+                print("\nExiting the script. Please update the list and re-run.\n")
+                exit()
+
+            elif choice == '2':
+                # Prompt user to enter the DLS variable
+                dls_variable = input("\nPlease enter the DLS variable (1 for in DLS, 0 for out of DLS): ")
+                
+                # Validate the input for the DLS variable
+                if dls_variable not in ['0', '1']:
+                    print("\nInvalid input. Please enter 0 or 1.\n")
+                    exit()
+
+                # Assign the user-provided DLS variable
+                run_data[run]['DLS'] = int(dls_variable)
+                print(f"\nManually set DLS variable for run {run} to {dls_variable}. Proceeding...\n")
+
+            elif choice == '3':
+                # Keep the DLS variable as -9999, pass to master script for removal
+                print(f"\nKeeping -9999 for {run} and passing to master script. Proceeding...\n")
+
+            else:
+                print("\nInvalid choice. Please enter either 1 or 2.\n")
+                exit()
+        
+
+    # output run information
+    print('\n')
+    print(f"Run (type) DLS")
+    print('------------------')
+    for run in runs:  # Iterate over the original runs list
+        config = run_data[run]
+        if config['DLS'] != -9999:
+            print(f"{run} ({config['runconfig']}) {config['DLS']}")
+        else:
+            print(f"{run} ({config['runconfig']}) {config['DLS']}  --> to be removed")
+        dls_values.append(config['DLS'])  # Append the DLS value in order
+    print('\n')
+    
+    return dls_values
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+    
+
 
 # Produce trigoverlap files for event building
 def trig_overlap(run, trig_path, app_path, scratch_path, singularity):
