@@ -20,7 +20,7 @@ def get_runs_from_user():
 
 
 # Check if there isn't RawData for any of the runs and omit that run from the list
-def is_there_raw(runs_to_run_user):
+def is_there_raw(runs_to_run_user, raw_path):
     temp_runs = []
     for i in range(len(runs_to_run_user)):
         if not os.path.isdir(raw_path + runs_to_run_user[i] + '/'):
