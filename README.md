@@ -15,7 +15,7 @@ Scripts to Event build and create ANNIEEvent root files on the grid.
    - Copy it from your local computer to your scratch area:
      - ```scp ANNIE_SQL_RUNS.txt <username>@anniegpvm02.fnal.gov:/pnfs/annie/scratch/users/<username>/<repo_name>/.```
 3. Make the following changes to ToolAnalysis before using/tar-balling:
-   - (TODO: change this so it pulls from ```persistent/```) For the `BeamClusterAnalysis` toolchain, copy the necessary LAPPD pedestal files and place them in your ToolAnalysis directory. Ensure the ```Configs``` file for the ```LAPPDLoadStore``` tool correctly points to these files. The current pedestal file path that works for grid submissions is: ```./Pedestals/LAPPD645839/*.txt```.
+   - (TODO: change this so it pulls from ```persistent/```) For the `BeamClusterAnalysis` toolchain, copy the necessary LAPPD pedestal files and place them in your ToolAnalysis directory. Ensure the ```Configs``` file for the ```LAPPDLoadStore``` tool correctly points to these files by changing the path of the configuration variable `PedinputfileTXT`. The current pedestal file path that works for grid submissions is: ```./Pedestals/LAPPD645839/*.txt```.
 4. Tar your ToolAnalysis directory via: ```tar -czvf <tarball_name>.tar.gz -C /<path_to_user_directory> <ToolAnalysis_folder>```.
 5. Copy this tar-ball to your scratch user directory (```/pnfs/annie/scratch/users/<username>/<repo_name>/```).
 6. Edit ```master_script.py``` to reflect your username, the bind mounted folders you are using when entering the singularity container, the name of the ANNIE SQL txt file you generated, and other paths.
