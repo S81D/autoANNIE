@@ -395,7 +395,7 @@ def run_container_job(run, name_TA, DLS, first, final):
 # BeamCluster job scripts
 
 # submission script
-def submit_BC(input_path, output_path, TA_tar_name, data_path):
+def submit_BC(input_path, output_path, TA_tar_name, data_path, node_loc, lappd_pedestal_path):
 
     # job resources
     lifetime = str(12)       # hr
@@ -410,10 +410,12 @@ def submit_BC(input_path, output_path, TA_tar_name, data_path):
     file.write('PI=$2\n')
     file.write('PF=$3\n')
     file.write('DISK_SPACE=$4\n')
+    file.write('PED_YEAR=$5\n')
     file.write('\n')
     file.write('export INPUT_PATH=' + input_path + '\n')
     file.write('export OUTPUT_FOLDER=' + output_path + '$RUN\n')
     file.write('export PROCESSED_FILES_PATH=' + data_path + 'R${RUN}/\n')
+    file.write('export LAPPD_PEDESTAL_PATH=' + lappd_pedestal_path + '\n')
     file.write('\n')
 
     file.write('echo ""\n')
@@ -439,13 +441,20 @@ def submit_BC(input_path, output_path, TA_tar_name, data_path):
     file.write('\n')
 
     file.write('jobsub_submit --memory=' + mem + 'MB --expected-lifetime=' + lifetime + 'h -G annie --disk=${DISK_SPACE}GB ')
-    file.write('--resource-provides=usage_model=OFFSITE --blacklist=Omaha,Swan,Wisconsin,RAL ')
-    file.write('$PART_FILES -f ${INPUT_PATH}/BeamCluster/run_container_job.sh -f ${INPUT_PATH}/' + TA_tar_name + ' ')
+
+    # offsite resources
+    if node_loc == "OFFSITE":
+        file.write('--resource-provides=usage_model=OFFSITE --blacklist=Omaha,Swan,Wisconsin,RAL ')
+    # FermiGrid
+    elif node_loc == "ONSITE":
+        file.write('--resource-provides=usage_model=DEDICATED,OPPORTUNISTIC ')
+
+    file.write('$PART_FILES -f ${INPUT_PATH}/BeamCluster/run_container_job.sh -f ${INPUT_PATH}/' + TA_tar_name + ' -f ${LAPPD_PEDESTAL_PATH}/${PED_YEAR}.tar.gz ')
     file.write('-d OUTPUT $OUTPUT_FOLDER ')
-    file.write('file://${INPUT_PATH}/BeamCluster/grid_job.sh BC_${RUN} ${PI} ${PF}\n')
+    file.write('file://${INPUT_PATH}/BeamCluster/grid_job.sh BC_${RUN} ${PI} ${PF} ${PED_YEAR}\n')
     file.write('\n')
 
-    file.write('echo "job name is: BC_${RUN} ${PI} ${PF}"\n')
+    file.write('echo "job name is: BC_${RUN} ${PI} ${PF} ${PED_YEAR}"\n')
     file.write('echo "" \n')
 
     file.close()
@@ -477,6 +486,7 @@ def grid_BC(user, TA_tar_name, name_TA, input_path):
     file.write('PART_NAME=$(echo "$FIRST_ARG" | grep -oE \'[0-9]+\')\n')
     file.write('PI=$2\n')
     file.write('PF=$3\n')
+    file.write('PED=$4   # LAPPD Pedestal folder\n')
     file.write('\n')
 
     file.write('# Create a dummy log file in the output directory\n')
@@ -487,15 +497,26 @@ def grid_BC(user, TA_tar_name, name_TA, input_path):
     file.write('echo "The job started at: $(date)" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('echo "" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('\n')
+
+    file.write('echo "Files present in CONDOR_INPUT:" >> ${DUMMY_OUTPUT_FILE} \n')
+    file.write('ls -lrth $CONDOR_DIR_INPUT >> ${DUMMY_OUTPUT_FILE} \n')
+    file.write('echo "" >> ${DUMMY_OUTPUT_FILE} \n')
+    file.write('\n')
     
     file.write('# Copy datafiles from $CONDOR_INPUT onto worker node (/srv)\n')
     file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/ProcessedData* .\n')
     file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/' + TA_tar_name + ' .\n')
+    file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/${PED}.tar.gz .\n')
     file.write('\n')
 
     file.write('# un-tar TA\n')
     file.write('tar -xzf ' + TA_tar_name + '\n')
     file.write('rm ' + TA_tar_name + '\n')
+    file.write('\n')
+
+    file.write('# un-tar LAPPD Pedestal\n')
+    file.write('tar -xzf ${PED}.tar.gz\n')
+    file.write('rm ${PED}.tar.gz\n')
     file.write('\n')
 
     file.write('# Check that there is the necessary amount of processed files present\n')
@@ -530,7 +551,7 @@ def grid_BC(user, TA_tar_name, name_TA, input_path):
     file.write('ls /cvmfs/singularity.opensciencegrid.org >> ${DUMMY_OUTPUT_FILE}\n')
     file.write('\n')
     file.write('# Setup singularity container\n')
-    file.write('singularity exec -B/srv:/srv /cvmfs/singularity.opensciencegrid.org/anniesoft/toolanalysis:latest/ $CONDOR_DIR_INPUT/run_container_job.sh $PART_NAME $PI $PF\n')
+    file.write('singularity exec -B/srv:/srv /cvmfs/singularity.opensciencegrid.org/anniesoft/toolanalysis:latest/ $CONDOR_DIR_INPUT/run_container_job.sh $PART_NAME $PI $PF $PED\n')
     file.write('\n')
     file.write('# ------ The script run_container_job.sh will now run within singularity ------ #\n')
     file.write('\n')
@@ -563,6 +584,7 @@ def grid_BC(user, TA_tar_name, name_TA, input_path):
     file.write('rm /srv/Filtered*\n')
     file.write('rm /srv/*.sh\n')
     file.write('rm -rf /srv/' + name_TA + '\n')
+    file.write('rm -rf /srv/${PED} \n')
     file.write('\n')
 
     file.write('end_time=$(date +%s) \n')
@@ -591,6 +613,7 @@ def container_BC(name_TA, input_path):
     file.write('PART_NAME=$(echo "$FIRST_ARG" | grep -oE \'[0-9]+\')\n')
     file.write('PI=$2\n')
     file.write('PF=$3\n')
+    file.write('PED=$4   # LAPPD Pedestal folder\n')
     file.write('\n')
     
     file.write('# logfile\n')
@@ -608,6 +631,10 @@ def container_BC(name_TA, input_path):
     file.write('echo "" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
     file.write('\n')
 
+    file.write('# place the LAPPD pedestal folder in the TA folder\n')
+    file.write('\cp -r /srv/${PED} /srv/' + name_TA + '/ \n')
+    file.write('\n')
+
     file.write('# enter ToolAnalysis directory\n')
     file.write('cd ' + name_TA + '/\n')
     file.write('\n')
@@ -623,12 +650,16 @@ def container_BC(name_TA, input_path):
     file.write('cd ../../\n')
     file.write('\n')
 
-    file.write('# Ensure the LAPPD pedestal files are correct\n')
-    file.write('ls Pedestals >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
-    file.write('ls Pedestal/* >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
-    file.write('echo "" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
-    file.write('echo "LAPPDProcessedAna Configs file:" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
-    file.write('cat configfiles/LAPPDProcessedAna/Configs >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    # Append LAPPD Pedestal folder to Configs in LAPPDProcessedAna
+    file.write('# append Configs for LAPPD Pedestal file \n')
+    file.write('echo "LAPPD Pedestal arg: ${PED}" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('echo "LAPPD Pedestal folder contents (${PED}): " >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('ls ${PED} >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write('echo "PedinputfileTXT line (unchanged): " >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write("sed -n '26p' configfiles/LAPPDProcessedAna/Configs >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n")
+    file.write('sed -i "26s|.*|PedinputfileTXT ${PED}/P|" configfiles/LAPPDProcessedAna/Configs \n')
+    file.write('echo "PedinputfileTXT line (changed): " >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
+    file.write("sed -n '26p' configfiles/LAPPDProcessedAna/Configs >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n")
     file.write('echo "" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
     file.write('\n')
 

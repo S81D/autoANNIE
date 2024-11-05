@@ -5,7 +5,6 @@
 
 import os
 import time
-import numpy as np
 import helper_script
 import submit_jobs
 
@@ -42,23 +41,25 @@ SQL_file = 'ANNIE_SQL_RUNS.txt'                   # SQL filename
 
 # constructed paths based on user customization and current areas of data
 
-app_path = '/exp/annie/app/users/' + user + '/' + TA_folder
+app_path = '/exp/annie/app/users/' + user + '/' + TA_folder                                        # working TA folder
 
-scratch_path = '/pnfs/annie/scratch/users/' + user + '/' + grid_sub_dir
-output_path = '/pnfs/annie/scratch/users/' + user + '/' + grid_output
-BC_scratch_output_path = output_path + 'beamcluster/'         # output from the BeamCluster jobs
+scratch_path = '/pnfs/annie/scratch/users/' + user + '/' + grid_sub_dir                            # clone autoANNIE repository/set of grid scripts
+output_path = '/pnfs/annie/scratch/users/' + user + '/' + grid_output                              # general output directory (event building jobs will be outputted directly here)
+BC_scratch_output_path = output_path + 'beamcluster/'                                              # output from the BeamCluster jobs (embedded in folder above)
 
-processed_path = '/pnfs/annie/persistent/processed/'
-data_path = processed_path + 'processed_EBV2/'
-trig_path = processed_path + 'trigoverlap/'
-beamcluster_path = processed_path + 'BeamClusterTrees/'
-beamfetcher_path = processed_path + 'BeamFetcherV2/'
-lappd_EB_path = processed_path + 'LAPPD_EB_output/'            # contains two subdirectories: LAPPDTree and offsetFit
-lappd_BC_path = beamcluster_path + 'LAPPDBeamClusterTrees/'
-lappd_filter_path = processed_path + 'processed_EBV2_LAPPDFiltered/'
-mrd_filter_path = processed_path + 'processed_EBV2_MRDFiltered/'
+processed_path = '/pnfs/annie/persistent/processed/'                                               # general directory for "processed" data, such as BeamFetcher files, ProcessedData, etc...
+data_path = processed_path + 'processed_EBV2/'                                                     # Processed Data
+trig_path = processed_path + 'trigoverlap/'                                                        # trigger overlap tar files
+beamcluster_path = processed_path + 'BeamClusterTrees/'                                            # BeamCluster root files
+beamfetcher_path = processed_path + 'BeamFetcherV2/'                                               # BeamFetcherV2 root files
+lappd_EB_path = processed_path + 'LAPPD_EB_output/'                                                # contains two subdirectories: LAPPDTree and offsetFit
+lappd_BC_path = beamcluster_path + 'LAPPDBeamClusterTrees/'                                        # filtered events w/ LAPPDs stored in root files
+lappd_filter_path = processed_path + 'processed_EBV2_LAPPDFiltered/'                               # filtered, processed data w/ LAPPD events
+mrd_filter_path = processed_path + 'processed_EBV2_MRDFiltered/'                                   # same, for the MRD
 
-raw_path = '/pnfs/annie/persistent/raw/raw/'
+raw_path = '/pnfs/annie/persistent/raw/raw/'                                                       # raw data location, transferred from the DAQ
+
+lappd_pedestal_path = '/pnfs/annie/persistent/processed/processed_EBV2_LAPPDFiltered/Pedestal/'    # Pedestal files for the LAPPDs in the BeamCluster jobs
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # 
@@ -99,9 +100,10 @@ usage_verbose = """
 usage_verbose_BC = """
 #########################################################################################
 # ******* BeamCluster mode ********
-# args: --runs_to_run
+# args: --runs_to_run --node_loc
 
 # runs_to_run = runs you would like to run the BC toolchain over. It will ask you to enter one at a time
+# node_loc = run OFFSITE or ONSITE (FermiGrid) jobs
 
 # Grid job specifications:
 # -- lifetime: 12hr
@@ -118,7 +120,7 @@ if which_mode == '1':      # Event building mode
     # user provided arguments
     step_size = int(input('Please specify the job part file size (3+2 is recommended):     '))
     resub_step_size = 1    # not provided by user - manually set for resubmissions
-    which_node = int(input('OFFSITE (1) or ONSITE (2)  (OFFSITE (1) is recommended):     '))
+    which_node = int(input('OFFSITE (1) or ONSITE (2)  (OFFSITE is recommended):     '))
     if which_node == 1:
         node_loc = 'OFFSITE'
     elif which_node == 2:
@@ -292,6 +294,14 @@ if which_mode == '1':      # Event building mode
 if which_mode == '2':        # BeamCluster
 
     print(usage_verbose_BC, '\n')
+    which_node = int(input('OFFSITE (1) or ONSITE (2)  (OFFSITE is recommended):     '))
+    if which_node == 1:
+        node_loc = 'OFFSITE'
+    elif which_node == 2:
+        node_loc = 'ONSITE'
+    else:
+        print('\nWRONG INPUT, RE-RUN SCRIPT\n')
+        exit()
     runs_to_run = helper_script.get_runs_from_user()
 
     print('\n\n\n')
@@ -321,8 +331,9 @@ if which_mode == '2':        # BeamCluster
     BC_resubs = [0 for i in range(len(runs_to_run))]
     complete_BC = 0      # when this value == number of runs, the while loop will complete
 
+
     # create job submission scripts  (since these scripts take args, we don't need to keep creating them for every job)
-    submit_jobs.submit_BC(scratch_path, BC_scratch_output_path, TA_tar_name, data_path)
+    submit_jobs.submit_BC(scratch_path, BC_scratch_output_path, TA_tar_name, data_path, node_loc, lappd_pedestal_path)
     submit_jobs.grid_BC(user, TA_tar_name, TA_folder, scratch_path)
     submit_jobs.container_BC(TA_folder, scratch_path)
     time.sleep(1)
@@ -361,10 +372,13 @@ if which_mode == '2':        # BeamCluster
                 #    if this is the case, submit the initial job
                 elif present == False and present_pro == False:
                     print('\nSubmitting BeamCluster job for Run ' + runs_to_run[i] + '...\n')
+
+                    # grab the correct lappd pedestal folder
+                    ped_folder = helper_script.LAPPD_pedestal(runs_to_run[i])
     
                     for j in range(n_jobs):
     
-                        os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + parts_i[j] + ' ' + parts_f[j] + ' ' + disk_space_factor)
+                        os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + parts_i[j] + ' ' + parts_f[j] + ' ' + disk_space_factor + ' ' + ped_folder)
 
                         time.sleep(1)
     
@@ -385,7 +399,7 @@ if which_mode == '2':        # BeamCluster
                     time.sleep(1)
                     # Just resubmit all of them (TODO: only submit missing files)
                     for j in range(n_jobs):
-                        os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + parts_i[j] + ' ' + parts_f[j] + ' ' + disk_space_factor)
+                        os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + parts_i[j] + ' ' + parts_f[j] + ' ' + disk_space_factor + ' ' + ped_folder)
                         time.sleep(1)
                     BC_resubs[i] += 1
                 else:

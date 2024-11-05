@@ -420,7 +420,7 @@ def my_jobs_BC(submitted_runs, user):
             lines = lines[i:]
             break
     
-    filtered_lines = [line.strip().split() for line in lines[1:] if ('I' in line.strip().split()[-7] or 'R' in line.strip().split()[-7]) and 'BC_' in line.strip().split()[-3]]
+    filtered_lines = [line.strip().split() for line in lines[1:] if ('I' in line.strip().split()[-8] or 'R' in line.strip().split()[-8]) and 'BC_' in line.strip().split()[-4]]
     jobs = [line for line in filtered_lines if line[9].startswith(f"BC_")]
     active_jobs = len(jobs)
     print('\nThere are', active_jobs, 'jobs currently running\n')
@@ -501,3 +501,19 @@ def check_root_pro(run_number,output_path):
     file_path = os.path.join(output_path, f"{name_of_file}.root")
 
     return os.path.exists(file_path)
+
+
+# attach the correct LAPPD Pedestal folder based on the year
+def LAPPD_pedestal(run_number):
+
+    # taken from Yue's README at: /pnfs/annie/persistent/processed/processed_EBV2_LAPPDFiltered/Pedestal/README
+
+    # 2022
+    if int(run_number) <= 4173:            # probably lots of data with no LAPPDs
+        return '2022_LAPPD40'
+    # 2023
+    elif 4180 <= int(run_number) < 4763:   # no runs between 4173 and 4180
+        return '2023_LAPPD40'
+    # 2024
+    elif int(run_number) >= 4763:          # continuing to present (November 2024)
+        return '2024_LAPPD645839'
