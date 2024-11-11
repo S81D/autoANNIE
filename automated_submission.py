@@ -16,8 +16,22 @@ raw_path = sys.argv[10]                                       # path to rawdata
 trig_path = sys.argv[11]                                      # path to trig overlap tar balls
 beamfetcher_path = sys.argv[12]                               # path to beamfetcher files
 node_loc = sys.argv[13]                                       # OFFSITE or ONSITE (FermiGrid) nodes
+run_type = sys.argv[14]                                       # run type (beam, AmBe, cosmic, LED, or laser)
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+if run_type == 'beam':
+        basename = "ProcessedData_PMTMRDLAPPD_R"
+        indy = 34    # used to "hack" off the part file number below (in missing_files.append line)
+elif run_type == 'AmBe' or run_type == 'LED':
+    basename = 'ProcessedData_PMT_R'
+    indy = 26
+elif run_type == 'laser':
+    basename = 'ProcessedData_PMTLAPPD_R'
+    indy = 31
+elif run_type == 'cosmic':
+    basename = 'ProcessedData_PMTMRD_R'
+    indy = 29
 
 # sort and find the highest numbered part file from that run (need for breaking up the jobs)
 all_files = os.listdir(raw_path + run + '/')
@@ -54,7 +68,10 @@ if missing == 'n':
 
     # calculate disk space requirements
     import math
-    disk_space = str(math.ceil(8 + .5*(step_size+2)))    # refined for beam runs based on job histories
+    if run_type == 'beam':
+        disk_space = str(math.ceil(8 + .5*(step_size+2)))     # refined for beam runs based on job histories
+    elif run_type == 'AmBe':
+        disk_space = str(math.ceil(13 + .75*(step_size+2)))   # works out to around 15 GB for 2+2
     #disk_space = str(10)     # typically fine as a default for jobs with less than ~8 part files or so
 
     # Submit the entire batch through multiple jobs, based on the user input (above)
@@ -80,11 +97,11 @@ if missing == 'n':
             sh_name = 'submit_grid_job_' + run + '.sh'
         
         # create the run_container_job and grid_job scripts
-        submit_jobs.grid_job(run, user, TA_tar_name, name_TA, first, final)
-        submit_jobs.run_container_job(run, name_TA, DLS, first, final)
+        submit_jobs.grid_job(run, user, TA_tar_name, name_TA, first, final, run_type)
+        submit_jobs.run_container_job(run, name_TA, DLS, first, final, run_type)
 
         # We can then create the job_submit script that will send our job (with files) to the grid
-        submit_jobs.submit_grid_job(run, part_list[0][i], part_list[1][i], input_path, output_path, TA_tar_name, disk_space, raw_path, trig_path, beamfetcher_path, first, final, node_loc)
+        submit_jobs.submit_grid_job(run, part_list[0][i], part_list[1][i], input_path, output_path, TA_tar_name, disk_space, raw_path, trig_path, beamfetcher_path, first, final, node_loc, run_type)
 
         # Lastly, we can execute the job submission script and send the job to the grid
         os.system('sh ' + sh_name)
@@ -110,16 +127,16 @@ if missing == 'y':
     print('\nFinding missing files in ' + str(processed_dir))
 
     raw_files = [file for file in os.listdir(raw_data_dir) if file.startswith("RAWDataR" + run_number)]
-    processed_files = [file for file in os.listdir(processed_dir) if file.startswith("ProcessedData_PMTMRDLAPPD_R" + run_number) and not file.endswith(".data")]
+    processed_files = [file for file in os.listdir(processed_dir) if file.startswith(basename + run_number) and not file.endswith(".data")]
     num_raw_files = len(raw_files)
     num_processed_files = len(processed_files)
 
     # Find the missing processed files
     missing_files = []
     for file in raw_files:
-        expected_processed_file = "ProcessedData_PMTMRDLAPPD_R" + file[8:]  # Remove "RAWDataR" prefix
+        expected_processed_file = basename + file[8:]  # Remove "RAWDataR" prefix
         if expected_processed_file not in processed_files:
-            missing_files.append(int(expected_processed_file[34:]))
+            missing_files.append(int(expected_processed_file[indy:]))
 
     missing_files.sort()   # put in numerical order
 
@@ -151,7 +168,10 @@ if missing == 'y':
 
     # calculate disk space requirements
     import math
-    disk_space = str(math.ceil(8 + .5*(step_size+2)))    # refined for beam runs based on job histories
+    if run_type == 'beam':
+        disk_space = str(math.ceil(8 + .5*(step_size+2)))     # refined for beam runs based on job histories
+    elif run_type == 'AmBe':
+        disk_space = str(math.ceil(13 + .75*(step_size+2)))   # works out to around 15 GB for 2+2
     #disk_space = str(10)     # typically fine as a default - good for Laser single part submissions
 
     # Submit the entire batch through multiple jobs, based on the user input (above)
@@ -173,11 +193,11 @@ if missing == 'y':
             os.system('rm grid_job_' + run + '.sh'); os.system('rm run_container_job_' + run + '.sh'); os.system('rm submit_grid_job_' + run + '.sh')
         
         # create the run_container_job and grid_job scripts
-        submit_jobs.grid_job(run, user, TA_tar_name, name_TA, first, final)
-        submit_jobs.run_container_job(run, name_TA, DLS, first, final)
+        submit_jobs.grid_job(run, user, TA_tar_name, name_TA, first, final, run_type)
+        submit_jobs.run_container_job(run, name_TA, DLS, first, final, run_type)
 
         # We can then create the job_submit script that will send our job (with files) to the grid
-        submit_jobs.submit_grid_job(run, part_list[0][i], part_list[1][i], input_path, output_path, TA_tar_name, disk_space, raw_path, trig_path, beamfetcher_path, first, final, node_loc)
+        submit_jobs.submit_grid_job(run, part_list[0][i], part_list[1][i], input_path, output_path, TA_tar_name, disk_space, raw_path, trig_path, beamfetcher_path, first, final, node_loc, run_type)
 
         # Lastly, we can execute the job submission script and send the job to the grid
         os.system('sh ' + sh_name)

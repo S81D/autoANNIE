@@ -4,7 +4,7 @@ import sys
 
 
 # this script is for actually submitting the job to the FermiGrid
-def submit_grid_job(run, p_start, p_end, input_path, output_path, TA_tar_name, disk_space, raw_path, trig_path, beamfetcher_path, first, final, node_loc):
+def submit_grid_job(run, p_start, p_end, input_path, output_path, TA_tar_name, disk_space, raw_path, trig_path, beamfetcher_path, first, final, node_loc, run_type):
     
     if first == True and final == True:
         file = open('submit_grid_job_' + run + '.sh', "w")
@@ -49,7 +49,8 @@ def submit_grid_job(run, p_start, p_end, input_path, output_path, TA_tar_name, d
     file.write('-f ${INPUT_PATH}/' + container_job + ' ')
     file.write('-f ${INPUT_PATH}/' + TA_tar_name + ' ')
     file.write('-f ' + trig_path + 'R' + run + '_TrigOverlap.tar.gz ')
-    file.write('-f ' + beamfetcher_path + 'beamfetcher_' + run + '.root ')
+    if run_type == 'beam':
+        file.write('-f ' + beamfetcher_path + 'beamfetcher_' + run + '.root ')
     file.write('-d OUTPUT $OUTPUT_FOLDER ')
     file.write('file://${INPUT_PATH}/' + grid_job + ' ' + run + '_' + str(p_start) + '_' + str(p_end) + '\n')
     file.close()
@@ -58,7 +59,7 @@ def submit_grid_job(run, p_start, p_end, input_path, output_path, TA_tar_name, d
 
 
 # this next script executes on the grid node
-def grid_job(run, user, TA_tar_name, name_TA, first, final):
+def grid_job(run, user, TA_tar_name, name_TA, first, final, run_type):
 
     if first == True and final == True:
         file = open('grid_job_' + run + '.sh', "w")
@@ -92,12 +93,19 @@ def grid_job(run, user, TA_tar_name, name_TA, first, final):
     file.write('PART_NAME=$1 \n')
     file.write('\n')
 
+    file.write('# Run type: ' + run_type + '\n')
+    file.write('\n')
+
     file.write('# Create a dummy file in the output directory \n')
     file.write('DUMMY_OUTPUT_FILE=${CONDOR_DIR_OUTPUT}/${JOBSUBJOBID}_dummy_output \n')
     file.write('touch ${DUMMY_OUTPUT_FILE} \n')
     file.write('echo "This dummy file belongs to job ${PART_NAME}" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('start_time=$(date +%s)   # start time in seconds \n')
     file.write('echo "The job started at: $(date)" >> ${DUMMY_OUTPUT_FILE} \n')
+    file.write('echo "" >> ${DUMMY_OUTPUT_FILE} \n')
+    file.write('\n')
+
+    file.write('echo "Run type: ' + run_type + '" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('echo "" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('\n')
 
@@ -109,7 +117,8 @@ def grid_job(run, user, TA_tar_name, name_TA, first, final):
     file.write('# Copy datafiles \n')
     file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/RAWData* . \n')
     file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/' + TA_tar_name + ' . \n')
-    file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/beamfetcher_' + run + '.root . \n') 
+    if run_type == 'beam':
+        file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/beamfetcher_' + run + '.root . \n') 
     file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/R' + run + '_TrigOverlap.tar.gz . \n')
     file.write('tar -xzf ' + TA_tar_name + '\n')
     file.write('tar -xzf R' + run + '_TrigOverlap.tar.gz \n')
@@ -126,8 +135,11 @@ def grid_job(run, user, TA_tar_name, name_TA, first, final):
     file.write('echo "Trig overlap files present:" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('ls -v /srv/Trig* >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('echo "" >> ${DUMMY_OUTPUT_FILE} \n')
-    file.write('echo "BeamFetcherV2 file present:" >> ${DUMMY_OUTPUT_FILE} \n')
-    file.write('ls -v /srv/beamfetcher*.root >> ${DUMMY_OUTPUT_FILE} \n')
+    if run_type == 'beam':
+        file.write('echo "BeamFetcherV2 file present:" >> ${DUMMY_OUTPUT_FILE} \n')
+        file.write('ls -v /srv/beamfetcher*.root >> ${DUMMY_OUTPUT_FILE} \n')
+    else:
+        file.write('echo "NOT A BEAM RUN - No BeamFetcherV2 file present!" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('echo "" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('\n')
 
@@ -156,8 +168,9 @@ def grid_job(run, user, TA_tar_name, name_TA, first, final):
     file.write('    echo "Processed = Raw, transferring to CONDOR_DIR_OUTPUT" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('    ${JSB_TMP}/ifdh.sh cp -D /srv/logfile* $CONDOR_DIR_OUTPUT \n')
     file.write('    ${JSB_TMP}/ifdh.sh cp -D /srv/Processed* $CONDOR_DIR_OUTPUT \n')
-    file.write('    ${JSB_TMP}/ifdh.sh cp -D /srv/LAPPDTree*.root $CONDOR_DIR_OUTPUT \n')
-    file.write('    ${JSB_TMP}/ifdh.sh cp -D /srv/offsetFitResult*.root $CONDOR_DIR_OUTPUT \n')
+    if run_type == 'beam' or run_type == 'laser':      # other source runs will not have LAPPD information
+        file.write('    ${JSB_TMP}/ifdh.sh cp -D /srv/LAPPDTree*.root $CONDOR_DIR_OUTPUT \n')
+        file.write('    ${JSB_TMP}/ifdh.sh cp -D /srv/offsetFitResult*.root $CONDOR_DIR_OUTPUT \n')
     file.write('else \n')
     file.write('    echo "Processed != Raw, transferring logfiles to CONDOR_DIR_OUTPUT, BUT NOT TRANSFERRING PROCESSED OR LAPPD FILES" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('    ${JSB_TMP}/ifdh.sh cp -D /srv/logfile* $CONDOR_DIR_OUTPUT \n')
@@ -206,7 +219,7 @@ def grid_job(run, user, TA_tar_name, name_TA, first, final):
 
 
 # third script actually executes the ToolChains once in the singularity environment
-def run_container_job(run, name_TA, DLS, first, final):
+def run_container_job(run, name_TA, DLS, first, final, run_type):
 
     # must be a small run with all part files contained in a single job
     if first == True and final == True:
@@ -242,22 +255,45 @@ def run_container_job(run, name_TA, DLS, first, final):
     file.write('echo "" >>/srv/logfile_${PART_NAME}.txt \n')
     file.write('\n')
 
+    # We have to copy files to and use the correct EventBuilder toolchain (different ones for different sources)
+    if run_type == 'beam':
+        eventbuilder_TC = 'EventBuilderV2'
+    elif run_type == "AmBe":
+        eventbuilder_TC = 'EventBuilderV2_AmBe'
+    elif run_type == "cosmic":
+        eventbuilder_TC = 'EventBuilderV2_cosmic'
+    elif run_type == "LED":
+        eventbuilder_TC = 'EventBuilderV2_LED'
+    elif run_type == "laser":
+        eventbuilder_TC = 'EventBuilderV2_laser'
+
+    file.write('# EventBuilding toolchain selected: ' + eventbuilder_TC + '\n')
+    file.write('\n')
+
     file.write('# copy files \n')
 
     file.write('echo "contents of my_files:" >> /srv/logfile_${PART_NAME}.txt \n')
     file.write('cat /srv/my_files.txt >> /srv/logfile_${PART_NAME}.txt \n')
     file.write('pwd >> /srv/logfile_${PART_NAME}.txt \n')
     file.write('echo "" >>/srv/logfile_${PART_NAME}.txt \n')
+    file.write('\n')
 
-    file.write('\cp /srv/my_files.txt /srv/' + name_TA + '/configfiles/LAPPD_EB/ \n')
-    file.write('\cp /srv/my_files.txt /srv/' + name_TA + '/configfiles/EventBuilderV2/ \n')
-    file.write('echo "contents of my_files in the LAPPD_EB toolchain:" >> /srv/logfile_${PART_NAME}.txt \n')
-    file.write('cat /srv/' + name_TA + '/configfiles/LAPPD_EB/my_files.txt >> /srv/logfile_${PART_NAME}.txt \n')
-    file.write('echo "" >>/srv/logfile_${PART_NAME}.txt \n')
+    if run_type == 'beam' or run_type == 'laser':
+        file.write('\cp /srv/my_files.txt /srv/' + name_TA + '/configfiles/LAPPD_EB/ \n')
+        file.write('echo "contents of my_files in the LAPPD_EB toolchain:" >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write('cat /srv/' + name_TA + '/configfiles/LAPPD_EB/my_files.txt >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write('echo "" >>/srv/logfile_${PART_NAME}.txt \n')
+    else:
+        file.write('# Will not run LAPPD toolchains, as it is a ' + run_type + ' run \n')
+
+    file.write('\cp /srv/my_files.txt /srv/' + name_TA + '/configfiles/' + eventbuilder_TC + '/ \n')
     file.write('echo "contents of my_files in the EventBuilder toolchain:" >> /srv/logfile_${PART_NAME}.txt \n')
-    file.write('cat /srv/' + name_TA + '/configfiles/EventBuilderV2/my_files.txt >> /srv/logfile_${PART_NAME}.txt \n')
+    file.write('cat /srv/' + name_TA + '/configfiles/' + eventbuilder_TC + '/my_files.txt >> /srv/logfile_${PART_NAME}.txt \n')
     file.write('echo "" >>/srv/logfile_${PART_NAME}.txt \n')
-    file.write('\cp /srv/beamfetcher_' + run + '.root /srv/' + name_TA + '/ \n')
+
+    if run_type == 'beam':
+        file.write('\cp /srv/beamfetcher_' + run + '.root /srv/' + name_TA + '/ \n')
+    
     file.write('\cp /srv/Trig* /srv/' + name_TA + '/ \n')
     file.write('echo "ToolAnalysis directory contents:" >> /srv/logfile_${PART_NAME}.txt \n')
     file.write('ls -v /srv/' + name_TA + '/ >>/srv/logfile_${PART_NAME}.txt \n')
@@ -270,33 +306,44 @@ def run_container_job(run, name_TA, DLS, first, final):
     file.write('echo "Are we now in the ToolAnalysis directory?" >> /srv/logfile_${PART_NAME}.txt \n')
     file.write('pwd >> /srv/logfile_${PART_NAME}.txt \n')
     file.write('echo "" >>/srv/logfile_${PART_NAME}.txt \n')
-    file.write('echo "LAPPD_EB Toolchain folder contents:" >> /srv/logfile_${PART_NAME}.txt \n')
-    file.write('ls configfiles/LAPPD_EB/ >> /srv/logfile_${PART_NAME}.txt \n')
-    file.write('echo "" >>/srv/logfile_${PART_NAME}.txt \n')
+    if run_type == 'beam' or run_type == 'laser':
+        file.write('echo "LAPPD_EB Toolchain folder contents:" >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write('ls configfiles/LAPPD_EB/ >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write('echo "" >> /srv/logfile_${PART_NAME}.txt \n')
     file.write('echo "EventBuilder Toolchain folder contents:" >> /srv/logfile_${PART_NAME}.txt \n')
-    file.write('ls configfiles/EventBuilderV2/ >> /srv/logfile_${PART_NAME}.txt \n')
-    file.write('echo "" >>/srv/logfile_${PART_NAME}.txt \n')
+    file.write('ls configfiles/' + eventbuilder_TC + '/ >> /srv/logfile_${PART_NAME}.txt \n')
+    file.write('echo "" >> /srv/logfile_${PART_NAME}.txt \n')
 
     file.write('\n')
 
     # Create DaylightSavings Config for MRD
-    file.write('# append MRDDataDecoder for DLS \n')
-    file.write("sed -i '$ s/.*/DaylightSavingsSpring " + DLS + "/' configfiles/EventBuilderV2/MRDDataDecoderConfig \n")
-    file.write('echo "MRDDataDecoderConfig (DLS ' + DLS + ' was selected)" >> /srv/logfile_${PART_NAME}.txt \n')
-    file.write('cat configfiles/EventBuilderV2/MRDDataDecoderConfig >> /srv/logfile_${PART_NAME}.txt \n')
-    file.write('echo "" >>/srv/logfile_${PART_NAME}.txt \n')
+    if run_type == 'beam' or run_type == 'cosmic':
+        file.write('# append MRDDataDecoder for DLS \n')
+        file.write("sed -i '$ s/.*/DaylightSavingsSpring " + DLS + "/' configfiles/" + eventbuilder_TC + "/MRDDataDecoderConfig \n")
+        file.write('echo "MRDDataDecoderConfig (DLS ' + DLS + ' was selected)" >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write('cat configfiles/' + eventbuilder_TC + '/MRDDataDecoderConfig >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write('echo "" >>/srv/logfile_${PART_NAME}.txt \n')
+    else:
+        file.write('# Not cosmic or beam: no need to append MRDDataDecoder for DLS \n')
+        file.write('echo "Not a cosmic or beam run, not appending MRDDataDecoderConfig" >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write('echo "" >>/srv/logfile_${PART_NAME}.txt \n')
     
     file.write('\n')
 
     # Change EBSaver beam file path
-    file.write('# append EBSaver with the correct beam file name \n')
-    file.write('echo "OG EBSaver (incorrect BeamFetcherV2 file):" >> /srv/logfile_${PART_NAME}.txt \n')
-    file.write('cat configfiles/EventBuilderV2/EBSaverConfig >> /srv/logfile_${PART_NAME}.txt \n')
-    file.write('echo "" >> /srv/logfile_${PART_NAME}.txt \n')
-    file.write('echo "EBSaver after, with the correct BeamFetcherV2 file:" >> /srv/logfile_${PART_NAME}.txt \n')
-    file.write("sed -i '$ s/.*/beamInfoFileName beamfetcher_" + run + ".root/' configfiles/EventBuilderV2/EBSaverConfig \n")
-    file.write('cat configfiles/EventBuilderV2/EBSaverConfig >> /srv/logfile_${PART_NAME}.txt \n')
-    file.write('echo "" >> /srv/logfile_${PART_NAME}.txt \n')
+    if run_type == 'beam':
+        file.write('# append EBSaver with the correct beam file name \n')
+        file.write('echo "OG EBSaver (incorrect BeamFetcherV2 file):" >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write('cat configfiles/' + eventbuilder_TC + '/EBSaverConfig >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write('echo "" >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write('echo "EBSaver after, with the correct BeamFetcherV2 file:" >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write("sed -i '$ s/.*/beamInfoFileName beamfetcher_" + run + ".root/' configfiles/" + eventbuilder_TC + "/EBSaverConfig \n")
+        file.write('cat configfiles/' + eventbuilder_TC + '/EBSaverConfig >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write('echo "" >> /srv/logfile_${PART_NAME}.txt \n')
+    else:
+        file.write('# No need to append EBSaver with the correct beam file name as it is a source run \n')
+        file.write('echo "Not appending EBSaver as there is no beam file" >> /srv/logfile_${PART_NAME}.txt \n')
+        file.write('echo "" >> /srv/logfile_${PART_NAME}.txt \n')
 
     file.write('\n')
 
@@ -305,16 +352,25 @@ def run_container_job(run, name_TA, DLS, first, final):
     file.write('\n')
 
     # this toolchain produces an LAPPDTree.root file
-    file.write('# Get LAPPD timing information (LAPPD_EB toolchain) \n')
-    file.write('./Analyse configfiles/LAPPD_EB/ToolChainConfig  >> /srv/logfile_LAPPD_${PART_NAME}.txt 2>&1 \n')      # execute lappd timing info toolchain
-    file.write('\n')
+    if run_type == 'beam' or run_type == 'laser':
+        file.write('# Get LAPPD timing information (LAPPD_EB toolchain) \n')
+        file.write('./Analyse configfiles/LAPPD_EB/ToolChainConfig  >> /srv/logfile_LAPPD_${PART_NAME}.txt 2>&1 \n')      # execute lappd timing info toolchain
+        file.write('\n')
 
-    # obtain offsets
-    file.write("""root -l -q 'offsetFit_MultipleLAPPD.cpp("LAPPDTree.root", 14, 1, 10, 0)' >> /srv/logfile_LAPPD_${PART_NAME}.txt 2>&1 \n""")
-    file.write('\n')
+    # obtain offsets (need to make sure the right primary trigger word is used)
+        if run_type == 'beam':
+            file.write('echo "Command: root -l -q offsetFit_MultipleLAPPD.cpp(LAPPDTree.root, 14, 1, 10, 0)" >> /srv/logfile_LAPPD_${PART_NAME}.txt \n')
+            file.write("""root -l -q 'offsetFit_MultipleLAPPD.cpp("LAPPDTree.root", 14, 1, 10, 0)' >> /srv/logfile_LAPPD_${PART_NAME}.txt 2>&1 \n""")
+        elif run_type == 'laser':
+            file.write('echo "Command: root -l -q offsetFit_MultipleLAPPD.cpp(LAPPDTree.root, 47, 1, 10, 0)" >> /srv/logfile_LAPPD_${PART_NAME}.txt \n')
+            file.write("""root -l -q 'offsetFit_MultipleLAPPD.cpp("LAPPDTree.root", 47, 0, 10, 0)' >> /srv/logfile_LAPPD_${PART_NAME}.txt 2>&1 \n""")
+            file.write('\n')
+
+    else:
+        file.write('# Will not run LAPPD_EB or offsetFit script as it is a ' + run_type + ' run \n')
 
     file.write('# Run the Event Building toolchain \n')
-    file.write('./Analyse configfiles/EventBuilderV2/ToolChainConfig  >> /srv/logfile_EventBuilder_${PART_NAME}.txt 2>&1 \n')      # execute Event Building TC
+    file.write('./Analyse configfiles/' + eventbuilder_TC + '/ToolChainConfig  >> /srv/logfile_EventBuilder_${PART_NAME}.txt 2>&1 \n')      # execute Event Building TC
     file.write('\n')
     
     file.write('pwd >> /srv/logfile_${PART_NAME}.txt \n')
@@ -377,9 +433,10 @@ def run_container_job(run, name_TA, DLS, first, final):
         file.write('echo $FILES >> /srv/logfile_${PART_NAME}.txt \n')
     
     file.write('\n')
-    file.write('cp LAPPDTree.root /srv/LAPPDTree_${PART_NAME}.root \n')
-    file.write('cp offsetFitResult.root /srv/offsetFitResult_${PART_NAME}.root \n')
-    file.write('\n')
+    if run_type == 'beam' or run_type == 'laser':
+        file.write('cp LAPPDTree.root /srv/LAPPDTree_${PART_NAME}.root \n')
+        file.write('cp offsetFitResult.root /srv/offsetFitResult_${PART_NAME}.root \n')
+        file.write('\n')
     file.write('# make sure any output files you want to keep are put in /srv or any subdirectory of /srv \n')
     file.write('\n')
     file.write('### END ###')

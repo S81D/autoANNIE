@@ -1,4 +1,4 @@
-import sys, os
+import os
 import time
 import pytz
 from datetime import datetime
@@ -17,6 +17,28 @@ def get_runs_from_user():
             break
         runs.append(user_input)
     return runs
+
+
+# ask the user for a run type
+def get_run_type():
+    run_type_list = ['beam', 'cosmic', 'AmBe', 'LED', 'laser']
+    print('Please select a run type from the list below:   (1, 2, 3, 4, or 5)  ')
+    runtype_verbose = """
+    - beam (1)
+    - cosmic (2)
+    - AmBe (3)
+    - LED (4)
+    - laser (5)
+    """
+    print(runtype_verbose)
+    run_type = int(input('->   '))
+    if run_type not in [1,2,3,4,5]:
+        print("\nWRONG INPUT! Please type '1', '2', '3', '4', or '5' and RE-RUN SCRIPT\nExiting...\n")
+        exit()
+    else:
+        print('\nYou have selected:', run_type_list[run_type-1], '(', run_type, ')\n')
+        time.sleep(3)
+        return run_type_list[run_type-1]
 
 
 # Check if there isn't RawData for any of the runs and omit that run from the list
@@ -299,13 +321,23 @@ def beamfetcher(run, step_size, raw_path, app_path, scratch_path, singularity, b
 
 
 # check output location for missing processed files after job submissions (in /scratch)
-def missing_scratch(run_number, raw_path, output_path):
+def missing_scratch(run_number, raw_path, output_path, run_type):
     
     raw_data_dir = raw_path + run_number + "/"
     processed_dir = output_path + run_number + "/"
 
+    # different build types are going to create ProcessedData with different basenames
+    if run_type == 'beam':
+        basename = "ProcessedData_PMTMRDLAPPD_R"
+    elif run_type == 'AmBe' or run_type == 'LED':
+        basename = 'ProcessedData_PMT_R'
+    elif run_type == 'laser':
+        basename = 'ProcessedData_PMTLAPPD_R'
+    elif run_type == 'cosmic':
+        basename = 'ProcessedData_PMTMRD_R'
+
     raw_files = [file for file in os.listdir(raw_data_dir) if file.startswith("RAWDataR" + run_number)]
-    processed_files = [file for file in os.listdir(processed_dir) if file.startswith("ProcessedData_PMTMRDLAPPD_R" + run_number) and not file.endswith(".data")]
+    processed_files = [file for file in os.listdir(processed_dir) if file.startswith(basename + run_number) and not file.endswith(".data")]
 
     num_raw_files = len(raw_files)
     num_processed_files = len(processed_files)
@@ -318,13 +350,26 @@ def missing_scratch(run_number, raw_path, output_path):
 
 
 # Check if there any missing processed files in /persistent after the file transfer
-def missing_after_transfer(run_number, raw_path, data_path):
+def missing_after_transfer(run_number, raw_path, data_path, run_type):
 
     raw_data_dir = raw_path + run_number + "/"
     processed_dir = data_path + "R" + run_number + "/"
 
+    if run_type == 'beam':
+        basename = "ProcessedData_PMTMRDLAPPD_R"
+        indy = 34    # used to "hack" off the part file number below (in missing_files.append line)
+    elif run_type == 'AmBe' or run_type == 'LED':
+        basename = 'ProcessedData_PMT_R'
+        indy = 26
+    elif run_type == 'laser':
+        basename = 'ProcessedData_PMTLAPPD_R'
+        indy = 31
+    elif run_type == 'cosmic':
+        basename = 'ProcessedData_PMTMRD_R'
+        indy = 29
+
     raw_files = [file for file in os.listdir(raw_data_dir) if file.startswith("RAWDataR" + run_number)]
-    processed_files = [file for file in os.listdir(processed_dir) if file.startswith("ProcessedData_PMTMRDLAPPD_R" + run_number) and not file.endswith(".data")]
+    processed_files = [file for file in os.listdir(processed_dir) if file.startswith(basename + run_number) and not file.endswith(".data")]
 
     num_raw_files = len(raw_files)
     num_processed_files = len(processed_files)
@@ -332,9 +377,9 @@ def missing_after_transfer(run_number, raw_path, data_path):
     # Find the missing processed files
     missing_files = []
     for file in raw_files:
-        expected_processed_file = "ProcessedData_PMTMRDLAPPD_R" + file[8:]  # Remove "RAWDataR" prefix
+        expected_processed_file = basename + file[8:]  # Remove "RAWDataR" prefix
         if expected_processed_file not in processed_files:
-            missing_files.append(int(expected_processed_file[34:]))
+            missing_files.append(int(expected_processed_file[indy:]))
 
     # Print the results
     print("\nNumber of raw files: ", num_raw_files)
@@ -458,12 +503,17 @@ def wait(length_of_time):
 
 
 # breakup run parts into seperate jobs if the number of processed files exceeds a certain part size
-def BC_breakup(run_number, data_path, part_size):
+def BC_breakup(run_number, data_path, part_size, run_type):
 
     processed_dir = data_path + "R" + run_number + "/"
 
+    if run_type == 'beam' or run_type == 'cosmic':
+        basename = "ProcessedData_PMTMRDLAPPD_R"
+    elif run_type == 'AmBe' or run_type == 'laser' or run_type == 'LED':
+        basename = 'ProcessedData_PMTLAPPD_R'
+
     # Get the list of processed files
-    processed_files = [file for file in os.listdir(processed_dir) if file.startswith("ProcessedData_PMTMRDLAPPD_R" + run_number) and not file.endswith(".data")]
+    processed_files = [file for file in os.listdir(processed_dir) if file.startswith(basename + run_number) and not file.endswith(".data")]
 
     # Count the number of processed files
     num_processed_files = len(processed_files)
