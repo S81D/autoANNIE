@@ -37,7 +37,7 @@ def get_run_type():
         exit()
     else:
         print('\nYou have selected:', run_type_list[run_type-1], '(', run_type, ')\n')
-        time.sleep(3)
+        time.sleep(1)
         return run_type_list[run_type-1]
 
 
