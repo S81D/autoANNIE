@@ -9,13 +9,34 @@ from datetime import datetime
 
 # Ask user for runs you would like to include
 def get_runs_from_user():
+
     runs = []
-    print("Enter the runs you want to include. Type 'done' when you are finished:")
-    while True:
-        user_input = input("Enter run number: ")
-        if user_input.lower() == 'done':
-            break
-        runs.append(user_input)
+    which_option = input("Shall we read from a list (runs.list) or enter the runs manually?\nType '1' for the list, type '2' for manual submission:   ")
+
+    if which_option == '1':
+        try:
+            with open('runs.list', 'r') as file:
+                for line in file:
+                    run = line.strip()
+                    if run:  # Ensure the line is not empty
+                        runs.append(run)
+            print("Runs added from runs.list")
+        except FileNotFoundError:
+            print("\nError: 'runs.list' file not found. Please create the list file and re-run the script.\n")
+            exit()
+    
+    elif which_option == '2':
+        print("Enter the runs you want to include. Type 'done' when you are finished.")
+        while True:
+            user_input = input("Enter run number: ")
+            if user_input.lower() == 'done':
+                break
+            runs.append(user_input)
+
+    else:
+        print("\nError: please type '1' or '2'! Exiting...\n")
+        exit()
+
     return runs
 
 
