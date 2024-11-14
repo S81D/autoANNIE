@@ -11,7 +11,7 @@ from datetime import datetime
 def get_runs_from_user():
 
     runs = []
-    which_option = input("Shall we read from a list (runs.list) or enter the runs manually?\nType '1' for the list, type '2' for manual submission:   ")
+    which_option = input("\nShall we read from a list (runs.list) or enter the runs manually?\nType '1' for the list, type '2' for manual submission:   ")
 
     if which_option == '1':
         try:
