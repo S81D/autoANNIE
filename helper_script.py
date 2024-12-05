@@ -11,7 +11,7 @@ from datetime import datetime
 def get_runs_from_user():
 
     runs = []
-    which_option = input("\nShall we read from a list (runs.list) or enter the runs manually?\nType '1' for the list, type '2' for manual submission:   ")
+    which_option = input("Read from a list (runs.list) or enter the runs manually?\nType '1' for the list, type '2' for manual submission:   ")
 
     if which_option == '1':
         try:
@@ -77,7 +77,6 @@ def is_there_raw(runs_to_run_user, raw_path):
 # Grab SQL, extract run information, and return DLS values accordingly for the MRDDataDecoder tool
 def read_SQL(SQL_file, runs):
     
-    print('\n')
     run_data = {}
     dls_values = []
 
@@ -235,7 +234,6 @@ def read_SQL(SQL_file, runs):
         else:
             print(f"{run} ({config['runconfig']}) {config['DLS']}  --> to be removed")
         dls_values.append(config['DLS'])  # Append the DLS value in order
-    print('\n')
     
     return dls_values
 
@@ -257,8 +255,6 @@ def trig_overlap(run, trig_path, app_path, scratch_path, singularity):
         os.system('sh run_trig.sh ' + app_path + ' ' + scratch_path + ' ' + trig_path + ' ' + singularity)
     else:
         print('Trigoverlap file present in /persistent for ' + run + ', moving on...\n')
-    
-    time.sleep(1)
 
     return
 
@@ -334,8 +330,6 @@ def beamfetcher(run, step_size, raw_path, app_path, scratch_path, singularity, b
 
     else:
         print('BeamFetcher file present in /persistent for ' + run + ', moving on...\n')
-    
-    time.sleep(1)
 
     return
 

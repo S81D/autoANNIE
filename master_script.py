@@ -63,7 +63,7 @@ lappd_pedestal_path = '/pnfs/annie/persistent/processed/processed_EBV2_LAPPDFilt
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # 
-print('\n')
+print('\n*********************************************\n')
 user_confirm = input('The current user is set to ' + user + ', is this correct? (y/n):      ')
 if user_confirm == 'n':
     user = input('\nPlease enter the correct user name:      ')
@@ -126,7 +126,7 @@ if which_mode == '1':      # Event building mode
     # user provided arguments
     step_size = int(input('Please specify the job part file size:     '))
     resub_step_size = 1    # not provided by user - manually set for resubmissions
-    which_node = int(input('OFFSITE (1) or ONSITE (2)  (OFFSITE is recommended):     '))
+    which_node = int(input('\nOFFSITE (1) or ONSITE (2)  (OFFSITE is recommended):     '))
     if which_node == 1:
         node_loc = 'OFFSITE'
     elif which_node == 2:
@@ -134,10 +134,11 @@ if which_mode == '1':      # Event building mode
     else:
         print('\nWRONG INPUT, RE-RUN SCRIPT\n')
         exit()
+    print('\n')
     runs_to_run_user = helper_script.get_runs_from_user()
 
 
-    print('\nVetting the runs you submitted...\n')
+    print('\nVetting the runs you submitted...')
     runs_to_run = []; DLS = []    # final lists to be used in event building
 
     # First, make sure there is RawData available for the runs the user selected
@@ -305,6 +306,10 @@ if which_mode == '1':      # Event building mode
 if which_mode == '2':        # BeamCluster
 
     print(usage_verbose_BC, '\n')
+
+    print('\n*** Please ensure the run type is the same for all runs you plan on submitting ***\n')
+    run_type = helper_script.get_run_type()     # will return 'beam', 'AmBe', etc...
+
     which_node = int(input('OFFSITE (1) or ONSITE (2)  (OFFSITE is recommended):     '))
     if which_node == 1:
         node_loc = 'OFFSITE'
@@ -322,6 +327,8 @@ if which_mode == '2':        # BeamCluster
     
     print('The following argument has been provided:\n')
     print('  - Runs to run: ', runs_to_run)
+    print('  - node location: ', node_loc)
+    print('  - run type: ', run_type)
     print('\n')
     time.sleep(3)
     print('Locking arguments in...')
@@ -432,10 +439,12 @@ if which_mode == '2':        # BeamCluster
                     os.system('sh merge_it.sh ' + singularity + ' ' + BC_scratch_output_path + ' ' + runs_to_run[i] + ' ' + 'BC')
                     time.sleep(1)
 
-                    # Second, merge the LAPPDBeamCluster files into one
-                    print('\nMerging LAPPDBeamCluster files...\n')
-                    os.system('sh merge_it.sh ' + singularity + ' ' + BC_scratch_output_path + ' ' + runs_to_run[i] + ' ' + 'LAPPD')
-                    time.sleep(1)
+                    # any LAPPD-related files will only be created for beam runs. We dont need LAPPD root files or filtered files for laser runs. We can just use the normal BC output.
+                    if run_type == 'beam':
+                        # Second, merge the LAPPDBeamCluster files into one
+                        print('\nMerging LAPPDBeamCluster files...\n')
+                        os.system('sh merge_it.sh ' + singularity + ' ' + BC_scratch_output_path + ' ' + runs_to_run[i] + ' ' + 'LAPPD')
+                        time.sleep(1)
     
                     # Then copy all the output files
                     
@@ -446,16 +455,17 @@ if which_mode == '2':        # BeamCluster
                     complete_BC += 1
                     time.sleep(1)
 
-                    # LAPPDBeamCluster
-                    os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path + ' ' + 'LAPPD' + ' ' + lappd_BC_path + ' ' + BC_scratch_output_path + ' ' + lappd_filter_path + ' ' + mrd_filter_path)
-                    time.sleep(1)
+                    if run_type == 'beam':
+                        # LAPPDBeamCluster
+                        os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path + ' ' + 'LAPPD' + ' ' + lappd_BC_path + ' ' + BC_scratch_output_path + ' ' + lappd_filter_path + ' ' + mrd_filter_path)
+                        time.sleep(1)
                     
-                    # Filtered files (LAPPD + MRD)
-                    print('\nTransferring Filtered datasets (MRD + LAPPD)...\n')
-                    os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path + ' ' + 'LAPPD_filter' + ' ' + lappd_BC_path + ' ' + BC_scratch_output_path + ' ' + lappd_filter_path + ' ' + mrd_filter_path)
-                    time.sleep(1)
-                    os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path + ' ' + 'MRD_filter' + ' ' + lappd_BC_path + ' ' + BC_scratch_output_path + ' ' + lappd_filter_path + ' ' + mrd_filter_path)
-                    time.sleep(1)
+                        # Filtered files (LAPPD + MRD)
+                        print('\nTransferring Filtered datasets (MRD + LAPPD)...\n')
+                        os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path + ' ' + 'LAPPD_filter' + ' ' + lappd_BC_path + ' ' + BC_scratch_output_path + ' ' + lappd_filter_path + ' ' + mrd_filter_path)
+                        time.sleep(1)
+                        os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path + ' ' + 'MRD_filter' + ' ' + lappd_BC_path + ' ' + BC_scratch_output_path + ' ' + lappd_filter_path + ' ' + mrd_filter_path)
+                        time.sleep(1)
                     
                 else:
                     print('\nRun ' + runs_to_run[i] + ' already transferred\n')
