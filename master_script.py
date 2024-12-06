@@ -1,12 +1,12 @@
 # master script for automated event building runs and running the BeamClusterAnalysis toolchain to create root files containing ANNIEEvent information
 
 # Author: Steven Doran
-# Date: October 2024
+# Date: December 2024
 
 import os
 import time
-import helper_script
-import submit_jobs
+from lib import helper_script as hs
+from lib import submit_jobs as sj
 
 #
 #
@@ -21,7 +21,7 @@ import submit_jobs
 user = '<username>'
 
 # bind mounted path for entering your container
-singularity = '-B/pnfs:/pnfs,/exp/annie/app/users/<username>/temp_directory:/tmp,/exp/annie/data:/exp/annie/data,/exp/annie/app:/exp/annie/app'
+singularity = '-B/pnfs:/pnfs,/exp/annie/app/users/' + user + '/temp_directory:/tmp,/exp/annie/data:/exp/annie/data,/exp/annie/app:/exp/annie/app'
 
 TA_folder = 'EventBuilding/'                      # Folder that was tar-balled (Needs to be the same name as the ToolAnalysis directory in /exp/annie/app that will run TrigOverlap + BeamFetcherV2 toolchains)
 TA_tar_name = 'MyToolAnalysis_grid.tar.gz'        # name of tar-ball
@@ -63,7 +63,7 @@ lappd_pedestal_path = '/pnfs/annie/persistent/processed/processed_EBV2_LAPPDFilt
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # 
-print('\n*********************************************\n')
+print('\n\n**********************************************************\n')
 user_confirm = input('The current user is set to ' + user + ', is this correct? (y/n):      ')
 if user_confirm == 'n':
     user = input('\nPlease enter the correct user name:      ')
@@ -121,7 +121,7 @@ if which_mode == '1':      # Event building mode
 
     print(usage_verbose, '\n')
 
-    run_type = helper_script.get_run_type()     # will return 'beam', 'AmBe', etc...
+    run_type = hs.get_run_type()     # will return 'beam', 'AmBe', etc...
 
     # user provided arguments
     step_size = int(input('Please specify the job part file size:     '))
@@ -134,18 +134,18 @@ if which_mode == '1':      # Event building mode
     else:
         print('\nWRONG INPUT, RE-RUN SCRIPT\n')
         exit()
-    print('\n')
-    runs_to_run_user = helper_script.get_runs_from_user()
+    
+    runs_to_run_user = hs.get_runs_from_user()
 
 
     print('\nVetting the runs you submitted...')
     runs_to_run = []; DLS = []    # final lists to be used in event building
 
     # First, make sure there is RawData available for the runs the user selected
-    raw_available_runs = helper_script.is_there_raw(runs_to_run_user, raw_path)
+    raw_available_runs = hs.is_there_raw(runs_to_run_user, raw_path)
 
     # Secondly, grab DLS info from the SQL txt file
-    dls_vals = helper_script.read_SQL(SQL_file, raw_available_runs)
+    dls_vals = hs.read_SQL(SQL_file, raw_available_runs)
     for i in range(len(raw_available_runs)):
         if dls_vals[i] != -9999:     # -9999 = runs that occured during DLS transition and were passed to the master script to be removed - this condition could probably be removed for certain source runs: TODO
             runs_to_run.append(runs_to_run_user[i])
@@ -195,7 +195,7 @@ if which_mode == '1':      # Event building mode
     
     # Produce trig overlap files if they havent yet been created
     for run in runs_to_run:
-        helper_script.trig_overlap(run, trig_path, app_path, scratch_path, singularity)
+        hs.trig_overlap(run, trig_path, app_path, scratch_path, singularity)
     
     # ---------------------------------------
     
@@ -206,7 +206,7 @@ if which_mode == '1':      # Event building mode
 
     if run_type == 'beam':
         for run in runs_to_run:
-            helper_script.beamfetcher(run, 10, raw_path, app_path, scratch_path, singularity, beamfetcher_path)
+            hs.beamfetcher(run, 10, raw_path, app_path, scratch_path, singularity, beamfetcher_path)
     else:
         print('Beam run type not selected - skipping BeamFetcherV2 root file creation...\n')
     
@@ -226,7 +226,7 @@ if which_mode == '1':      # Event building mode
         # omit the runs that have some part files in /scratch
         exists_and_contains = os.path.exists(output_path + runs_to_run[i] + "/") and any(file.startswith('Processed') and not file.endswith(".data") for file in os.listdir(output_path + runs_to_run[i] + "/"))
         if exists_and_contains == False:
-            os.system('python3 automated_submission.py ' + user + ' ' + runs_to_run[i] + ' n ' + str(small_step) + ' ' + DLS[i] + ' ' + TA_tar_name + ' ' + TA_folder + ' ' + scratch_path + ' ' + output_path + ' ' + raw_path + ' ' + trig_path + ' ' + beamfetcher_path + ' ' + node_loc + ' ' + run_type)   # no re-run
+            os.system('python3 lib/automated_submission.py ' + user + ' ' + runs_to_run[i] + ' n ' + str(small_step) + ' ' + DLS[i] + ' ' + TA_tar_name + ' ' + TA_folder + ' ' + scratch_path + ' ' + output_path + ' ' + raw_path + ' ' + trig_path + ' ' + beamfetcher_path + ' ' + node_loc + ' ' + run_type)   # no re-run
             time.sleep(3)
         else:
             print('\n' + runs_to_run[i] + ' processed files present in /scratch, not submitting this run in first batch...\n')
@@ -250,23 +250,23 @@ if which_mode == '1':      # Event building mode
     while complete != len(resubs):
     
         # check jobs
-        active_jobs, which_runs, check = helper_script.my_jobs(runs_to_run, user)
+        active_jobs, which_runs, check = hs.my_jobs(runs_to_run, user)
     
         check_count = 0
         for i in range(len(check)):
     
             if check[i] == True and resubs[i] < 2:
-                reprocess = helper_script.missing_scratch(runs_to_run[i], raw_path, output_path, run_type)
+                reprocess = hs.missing_scratch(runs_to_run[i], raw_path, output_path, run_type)
                 time.sleep(1)
                 if reprocess == True:   # if there are missing files in scratch, re-submit
-                    os.system('python3 automated_submission.py ' + user + ' ' + runs_to_run[i] + ' y ' + str(resub_step_size) + ' ' + DLS[i] + ' ' + TA_tar_name + ' ' + TA_folder + ' ' + scratch_path + ' ' + output_path + ' ' + raw_path + ' ' + trig_path + ' ' + beamfetcher_path + ' ' + node_loc + ' ' + run_type)
+                    os.system('python3 lib/automated_submission.py ' + user + ' ' + runs_to_run[i] + ' y ' + str(resub_step_size) + ' ' + DLS[i] + ' ' + TA_tar_name + ' ' + TA_folder + ' ' + scratch_path + ' ' + output_path + ' ' + raw_path + ' ' + trig_path + ' ' + beamfetcher_path + ' ' + node_loc + ' ' + run_type)
                     resubs[i] += 1
                 else:                   # if there aren't any missing files, transfer
                     if resubs[i] != -1:
                         print('\n\nRun ' + runs_to_run[i] + ' is done! It was resubmitted ' + str(resubs[i]) + ' times. Initiating transfer...\n')
-                        os.system('sh copy_grid_output.sh ' + runs_to_run[i] + ' ' + data_path + ' ' + output_path + ' ' + lappd_EB_path + ' ' + run_type)
+                        os.system('sh lib/copy_grid_output.sh ' + runs_to_run[i] + ' ' + data_path + ' ' + output_path + ' ' + lappd_EB_path + ' ' + run_type)
                         time.sleep(1)
-                        helper_script.missing_after_transfer(runs_to_run[i], raw_path, data_path, run_type)
+                        hs.missing_after_transfer(runs_to_run[i], raw_path, data_path, run_type)
                         complete += 1; resubs[i] = -1
                     else:
                         print('\nRun ' + runs_to_run[i] + ' already transferred\n')
@@ -274,9 +274,9 @@ if which_mode == '1':      # Event building mode
     
             elif check[i] == True and resubs[i] == 2:    # no more jobs, but already re-submitted twice
                 print('\nMax re-submissions reached for run ' + runs_to_run[i] + '! Initiating transfer...\n')
-                os.system('sh copy_grid_output.sh ' + runs_to_run[i] + ' ' + data_path + ' ' + output_path + ' ' + lappd_EB_path + ' ' + run_type)
+                os.system('sh lib/copy_grid_output.sh ' + runs_to_run[i] + ' ' + data_path + ' ' + output_path + ' ' + lappd_EB_path + ' ' + run_type)
                 time.sleep(1)
-                helper_script.missing_after_transfer(runs_to_run[i], raw_path, data_path, run_type)
+                hs.missing_after_transfer(runs_to_run[i], raw_path, data_path, run_type)
                 complete += 1; resubs[i] = -1
     
             
@@ -286,7 +286,7 @@ if which_mode == '1':      # Event building mode
     
         # if all jobs are still active, wait and return to start (dont submit any BC jobs)
         if check_count == len(check):
-            helper_script.wait(5)     # wait 5 minutes
+            hs.wait(5)     # wait 5 minutes
 
 
     # ---------------------------------------
@@ -308,7 +308,7 @@ if which_mode == '2':        # BeamCluster
     print(usage_verbose_BC, '\n')
 
     print('\n*** Please ensure the run type is the same for all runs you plan on submitting ***\n')
-    run_type = helper_script.get_run_type()     # will return 'beam', 'AmBe', etc...
+    run_type = hs.get_run_type()     # will return 'beam', 'AmBe', etc...
 
     which_node = int(input('OFFSITE (1) or ONSITE (2)  (OFFSITE is recommended):     '))
     if which_node == 1:
@@ -318,7 +318,7 @@ if which_mode == '2':        # BeamCluster
     else:
         print('\nWRONG INPUT, RE-RUN SCRIPT\n')
         exit()
-    runs_to_run = helper_script.get_runs_from_user()
+    runs_to_run = hs.get_runs_from_user()
 
     print('\n\n\n')
     print('*************************************************')
@@ -351,22 +351,22 @@ if which_mode == '2':        # BeamCluster
 
 
     # create job submission scripts  (since these scripts take args, we don't need to keep creating them for every job)
-    submit_jobs.submit_BC(scratch_path, BC_scratch_output_path, TA_tar_name, data_path, node_loc, lappd_pedestal_path)
-    submit_jobs.grid_BC(user, TA_tar_name, TA_folder, scratch_path)
-    submit_jobs.container_BC(TA_folder, scratch_path)
+    sj.submit_BC(scratch_path, BC_scratch_output_path, TA_tar_name, data_path, node_loc, lappd_pedestal_path)
+    sj.grid_BC(user, TA_tar_name, TA_folder, scratch_path)
+    sj.container_BC(TA_folder, scratch_path)
     time.sleep(1)
 
     BC_job_size = 50       # how many part files per job  (500 is the recommended max)
 
     while complete_BC != len(BC_resubs):
 
-        BC_active_jobs, BC_which_runs, BC_check = helper_script.my_jobs_BC(runs_to_run, user)
+        BC_active_jobs, BC_which_runs, BC_check = hs.my_jobs_BC(runs_to_run, user)
     
         check_count_BC = 0
         for i in range(len(BC_check)):
     
             # breaks the part files into N part sections
-            parts_i, parts_f = helper_script.BC_breakup(runs_to_run[i], data_path, BC_job_size, run_type)
+            parts_i, parts_f = hs.BC_breakup(runs_to_run[i], data_path, BC_job_size, run_type)
             n_jobs = len(parts_i)
 
             disk_space_factor = str(int(((BC_job_size*8)/1000) + 8))
@@ -375,8 +375,8 @@ if which_mode == '2':        # BeamCluster
             if BC_check[i] == True and BC_resubs[i] == 0:
                 
                 # check if all root files are present
-                present = helper_script.check_root_scratch(runs_to_run[i],n_jobs,BC_scratch_output_path)
-                present_pro = helper_script.check_root_pro(runs_to_run[i],beamcluster_path)
+                present = hs.check_root_scratch(runs_to_run[i],n_jobs,BC_scratch_output_path)
+                present_pro = hs.check_root_pro(runs_to_run[i],beamcluster_path)
     
                 # Couple of scenarios:
     
@@ -392,7 +392,7 @@ if which_mode == '2':        # BeamCluster
                     print('\nSubmitting BeamCluster job for Run ' + runs_to_run[i] + '...\n')
 
                     # grab the correct lappd pedestal folder
-                    ped_folder = helper_script.LAPPD_pedestal(runs_to_run[i])
+                    ped_folder = hs.LAPPD_pedestal(runs_to_run[i])
     
                     for j in range(n_jobs):
     
@@ -410,7 +410,7 @@ if which_mode == '2':        # BeamCluster
             # no active jobs but re-submitted (get 1 resubmission)
             elif BC_check[i] == True and BC_resubs[i] == 1:
                 
-                present = helper_script.check_root_scratch(runs_to_run[i],n_jobs,BC_scratch_output_path)
+                present = hs.check_root_scratch(runs_to_run[i],n_jobs,BC_scratch_output_path)
     
                 if present == False:
                     print('\nRe-submitting BeamCluster job for Run ' + runs_to_run[i] + '...\n')
@@ -431,19 +431,19 @@ if which_mode == '2':        # BeamCluster
             
             # actually complete, transfer
             elif BC_resubs[i] == -1:
-                present = helper_script.check_root_pro(runs_to_run[i],beamcluster_path)
+                present = hs.check_root_pro(runs_to_run[i],beamcluster_path)
                 if present == False:
     
                     # first merge the BeamCluster files into one
                     print('\nMerging BeamCluster files...\n')
-                    os.system('sh merge_it.sh ' + singularity + ' ' + BC_scratch_output_path + ' ' + runs_to_run[i] + ' ' + 'BC')
+                    os.system('sh lib/merge_it.sh ' + singularity + ' ' + BC_scratch_output_path + ' ' + runs_to_run[i] + ' ' + 'BC')
                     time.sleep(1)
 
                     # any LAPPD-related files will only be created for beam runs. We dont need LAPPD root files or filtered files for laser runs. We can just use the normal BC output.
                     if run_type == 'beam':
                         # Second, merge the LAPPDBeamCluster files into one
                         print('\nMerging LAPPDBeamCluster files...\n')
-                        os.system('sh merge_it.sh ' + singularity + ' ' + BC_scratch_output_path + ' ' + runs_to_run[i] + ' ' + 'LAPPD')
+                        os.system('sh lib/merge_it.sh ' + singularity + ' ' + BC_scratch_output_path + ' ' + runs_to_run[i] + ' ' + 'LAPPD')
                         time.sleep(1)
     
                     # Then copy all the output files
@@ -477,7 +477,7 @@ if which_mode == '2':        # BeamCluster
     
     
         if check_count_BC == len(BC_check):
-            helper_script.wait(5)     # wait 5 minutes
+            hs.wait(5)     # wait 5 minutes
 
 
     print('\nNo jobs left! All runs', runs_to_run, 'completed!')
