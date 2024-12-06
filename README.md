@@ -4,6 +4,13 @@ Scripts to Event build and create ANNIEEvent root files on the grid.
 
 -----------------------
 
+### Contents:
+- `master_script.py` runs and executes the task.
+- `tar_ball_create_script.py` will tar-ball your local copy of ToolAnalysis in preparation for grid submission.
+- `lib/` folder contains helper scripts.
+- `BeamCluster/` folder contains a "holding" area for grid submission scripts that are separate from the event building scripts.
+- `run_processing/` folder contains a helpful script to assess the percentage of runs that have currently been processed.  
+
 ### Usage:
 
 1. After cloning a copy of this repo to your user directory in ```/pnfs/annie/scratch/users/<username>/```, make sure you have the latest copy of ToolAnalysis built in ```/exp/annie/app/users/<username>/```. It is recommended to keep this directory present and up to date and use it exclusively for these grid jobs.
@@ -42,3 +49,5 @@ Scripts to Event build and create ANNIEEvent root files on the grid.
 To check on your jobs, use: ```jobsub_q -G annie --user <<username>>```
 
 To cancel job submissions, use: ```jobsub_rm -G annie <<username>>```
+
+To check why jobs are held, use: ```jobsub_q --hold -G annie <<username>>```
