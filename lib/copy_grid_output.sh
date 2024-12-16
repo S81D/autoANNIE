@@ -19,7 +19,7 @@ file_exists() {
 mkdir -p $data_path/R$run
 chmod 777 $data_path/R$run
 # only laser and beam runs will have LAPPDs
-if [ "$run_type" == "beam" ] || [ "$run_type" == "laser" ]; then
+if [ "$run_type" == "beam" ] || [ "$run_type" == "laser" ] || [ "$run_type" == "beam_39" ]; then
     mkdir -p $lappd_EB_path/LAPPDTree/R$run
     chmod 777 $lappd_EB_path/LAPPDTree/R$run
     mkdir -p $lappd_EB_path/offsetFit/R$run
@@ -49,7 +49,7 @@ done
 
 
 # LAPPD-related EB files (LAPPDTree + offsetFit result)
-if [ "$run_type" == "beam" ] || [ "$run_type" == "laser" ]; then
+if [ "$run_type" == "beam" ] || [ "$run_type" == "laser" ] || [ "$run_type" == "beam_39" ]; then
 
     echo ""
     echo "Copying LAPPD Files..."

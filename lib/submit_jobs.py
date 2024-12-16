@@ -49,7 +49,7 @@ def submit_grid_job(run, p_start, p_end, input_path, output_path, TA_tar_name, d
     file.write('-f ${INPUT_PATH}/' + container_job + ' ')
     file.write('-f ${INPUT_PATH}/' + TA_tar_name + ' ')
     file.write('-f ' + trig_path + 'R' + run + '_TrigOverlap.tar.gz ')
-    if run_type == 'beam':
+    if run_type == 'beam' or run_type == 'beam_39':
         file.write('-f ' + beamfetcher_path + 'beamfetcher_' + run + '.root ')
     file.write('-d OUTPUT $OUTPUT_FOLDER ')
     file.write('file://${INPUT_PATH}/' + grid_job + ' ' + run + '_' + str(p_start) + '_' + str(p_end) + '\n')
@@ -117,7 +117,7 @@ def grid_job(run, user, TA_tar_name, name_TA, first, final, run_type):
     file.write('# Copy datafiles \n')
     file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/RAWData* . \n')
     file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/' + TA_tar_name + ' . \n')
-    if run_type == 'beam':
+    if run_type == 'beam' or run_type == 'beam_39':
         file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/beamfetcher_' + run + '.root . \n') 
     file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/R' + run + '_TrigOverlap.tar.gz . \n')
     file.write('tar -xzf ' + TA_tar_name + '\n')
@@ -135,7 +135,7 @@ def grid_job(run, user, TA_tar_name, name_TA, first, final, run_type):
     file.write('echo "Trig overlap files present:" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('ls -v /srv/Trig* >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('echo "" >> ${DUMMY_OUTPUT_FILE} \n')
-    if run_type == 'beam':
+    if run_type == 'beam' or run_type == 'beam_39':
         file.write('echo "BeamFetcherV2 file present:" >> ${DUMMY_OUTPUT_FILE} \n')
         file.write('ls -v /srv/beamfetcher*.root >> ${DUMMY_OUTPUT_FILE} \n')
     else:
@@ -168,7 +168,7 @@ def grid_job(run, user, TA_tar_name, name_TA, first, final, run_type):
     file.write('    echo "Processed = Raw, transferring to CONDOR_DIR_OUTPUT" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('    ${JSB_TMP}/ifdh.sh cp -D /srv/logfile* $CONDOR_DIR_OUTPUT \n')
     file.write('    ${JSB_TMP}/ifdh.sh cp -D /srv/Processed* $CONDOR_DIR_OUTPUT \n')
-    if run_type == 'beam' or run_type == 'laser':      # other source runs will not have LAPPD information
+    if run_type == 'beam' or run_type == 'laser' or run_type == 'beam_39':      # other source runs will not have LAPPD information
         file.write('    ${JSB_TMP}/ifdh.sh cp -D /srv/LAPPDTree*.root $CONDOR_DIR_OUTPUT \n')
         file.write('    ${JSB_TMP}/ifdh.sh cp -D /srv/offsetFitResult*.root $CONDOR_DIR_OUTPUT \n')
     file.write('else \n')
@@ -256,7 +256,7 @@ def run_container_job(run, name_TA, DLS, first, final, run_type):
     file.write('\n')
 
     # We have to copy files to and use the correct EventBuilder toolchain (different ones for different sources)
-    if run_type == 'beam':
+    if run_type == 'beam' or run_type == 'beam_39':
         eventbuilder_TC = 'EventBuilderV2'
     elif run_type == "AmBe":
         eventbuilder_TC = 'EventBuilderV2_AmBe'
@@ -278,7 +278,7 @@ def run_container_job(run, name_TA, DLS, first, final, run_type):
     file.write('echo "" >>/srv/logfile_${PART_NAME}.txt \n')
     file.write('\n')
 
-    if run_type == 'beam' or run_type == 'laser':
+    if run_type == 'beam' or run_type == 'laser' or run_type == 'beam_39':
         file.write('\cp /srv/my_files.txt /srv/' + name_TA + '/configfiles/LAPPD_EB/ \n')
         file.write('echo "contents of my_files in the LAPPD_EB toolchain:" >> /srv/logfile_${PART_NAME}.txt \n')
         file.write('cat /srv/' + name_TA + '/configfiles/LAPPD_EB/my_files.txt >> /srv/logfile_${PART_NAME}.txt \n')
@@ -291,7 +291,7 @@ def run_container_job(run, name_TA, DLS, first, final, run_type):
     file.write('cat /srv/' + name_TA + '/configfiles/' + eventbuilder_TC + '/my_files.txt >> /srv/logfile_${PART_NAME}.txt \n')
     file.write('echo "" >>/srv/logfile_${PART_NAME}.txt \n')
 
-    if run_type == 'beam':
+    if run_type == 'beam' or run_type == 'beam_39':
         file.write('\cp /srv/beamfetcher_' + run + '.root /srv/' + name_TA + '/ \n')
     
     file.write('\cp /srv/Trig* /srv/' + name_TA + '/ \n')
@@ -306,7 +306,7 @@ def run_container_job(run, name_TA, DLS, first, final, run_type):
     file.write('echo "Are we now in the ToolAnalysis directory?" >> /srv/logfile_${PART_NAME}.txt \n')
     file.write('pwd >> /srv/logfile_${PART_NAME}.txt \n')
     file.write('echo "" >>/srv/logfile_${PART_NAME}.txt \n')
-    if run_type == 'beam' or run_type == 'laser':
+    if run_type == 'beam' or run_type == 'laser' or run_type == 'beam_39':
         file.write('echo "LAPPD_EB Toolchain folder contents:" >> /srv/logfile_${PART_NAME}.txt \n')
         file.write('ls configfiles/LAPPD_EB/ >> /srv/logfile_${PART_NAME}.txt \n')
         file.write('echo "" >> /srv/logfile_${PART_NAME}.txt \n')
@@ -317,7 +317,7 @@ def run_container_job(run, name_TA, DLS, first, final, run_type):
     file.write('\n')
 
     # Create DaylightSavings Config for MRD
-    if run_type == 'beam' or run_type == 'cosmic':
+    if run_type == 'beam' or run_type == 'cosmic or run_type == 'beam_39'':
         file.write('# append MRDDataDecoder for DLS \n')
         file.write("sed -i '$ s/.*/DaylightSavingsSpring " + DLS + "/' configfiles/" + eventbuilder_TC + "/MRDDataDecoderConfig \n")
         file.write('echo "MRDDataDecoderConfig (DLS ' + DLS + ' was selected)" >> /srv/logfile_${PART_NAME}.txt \n')
@@ -331,7 +331,7 @@ def run_container_job(run, name_TA, DLS, first, final, run_type):
     file.write('\n')
 
     # Change EBSaver beam file path
-    if run_type == 'beam':
+    if run_type == 'beam' or run_type == 'beam_39':
         file.write('# append EBSaver with the correct beam file name \n')
         file.write('echo "OG EBSaver (incorrect BeamFetcherV2 file):" >> /srv/logfile_${PART_NAME}.txt \n')
         file.write('cat configfiles/' + eventbuilder_TC + '/EBSaverConfig >> /srv/logfile_${PART_NAME}.txt \n')
@@ -352,15 +352,19 @@ def run_container_job(run, name_TA, DLS, first, final, run_type):
     file.write('\n')
 
     # this toolchain produces an LAPPDTree.root file
-    if run_type == 'beam' or run_type == 'laser':
+    if run_type == 'beam' or run_type == 'laser' or run_type == 'beam_39':
         file.write('# Get LAPPD timing information (LAPPD_EB toolchain) \n')
         file.write('./Analyse configfiles/LAPPD_EB/ToolChainConfig  >> /srv/logfile_LAPPD_${PART_NAME}.txt 2>&1 \n')      # execute lappd timing info toolchain
         file.write('\n')
 
     # obtain offsets (need to make sure the right primary trigger word is used)
-        if run_type == 'beam':
+        if run_type == 'beam':        # PPS = 10s (default)
             file.write('echo "Command: root -l -q offsetFit_MultipleLAPPD.cpp(LAPPDTree.root, 14, 1, 10, 0)" >> /srv/logfile_LAPPD_${PART_NAME}.txt \n')
             file.write("""root -l -q 'offsetFit_MultipleLAPPD.cpp("LAPPDTree.root", 14, 1, 10, 0)' >> /srv/logfile_LAPPD_${PART_NAME}.txt 2>&1 \n""")
+        elif run_type == 'beam_39':   # PPS = 1s (run type 39)
+            file.write('echo "Command: root -l -q offsetFit_MultipleLAPPD.cpp(LAPPDTree.root, 14, 1, 1, 0)" >> /srv/logfile_LAPPD_${PART_NAME}.txt \n')
+            file.write('echo "*** LAPPD PPS RATIO SET TO 1s (RUN TYPE 39) ***" >> /srv/logfile_LAPPD_${PART_NAME}.txt \n')
+            file.write("""root -l -q 'offsetFit_MultipleLAPPD.cpp("LAPPDTree.root", 14, 1, 1, 0)' >> /srv/logfile_LAPPD_${PART_NAME}.txt 2>&1 \n""")
         elif run_type == 'laser':
             file.write('echo "Command: root -l -q offsetFit_MultipleLAPPD.cpp(LAPPDTree.root, 47, 1, 10, 0)" >> /srv/logfile_LAPPD_${PART_NAME}.txt \n')
             file.write("""root -l -q 'offsetFit_MultipleLAPPD.cpp("LAPPDTree.root", 47, 0, 10, 0)' >> /srv/logfile_LAPPD_${PART_NAME}.txt 2>&1 \n""")
@@ -433,7 +437,7 @@ def run_container_job(run, name_TA, DLS, first, final, run_type):
         file.write('echo $FILES >> /srv/logfile_${PART_NAME}.txt \n')
     
     file.write('\n')
-    if run_type == 'beam' or run_type == 'laser':
+    if run_type == 'beam' or run_type == 'laser' or run_type == 'beam_39':
         file.write('cp LAPPDTree.root /srv/LAPPDTree_${PART_NAME}.root \n')
         file.write('cp offsetFitResult.root /srv/offsetFitResult_${PART_NAME}.root \n')
         file.write('\n')
@@ -562,7 +566,7 @@ def grid_BC(user, TA_tar_name, name_TA, input_path, run_type):
     file.write('echo "Run type: ' + run_type + '" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('echo "" >> ${DUMMY_OUTPUT_FILE} \n')
     file.write('\n')
-    if run_type == 'beam' or run_type == 'laser':
+    if run_type == 'beam' or run_type == 'laser' or run_type == 'beam_39':
         file.write('# LAPPDs will be PRESENT in this job \n')
     else:
         file.write('# LAPPDs will NOT be present in this job \n')
@@ -576,7 +580,7 @@ def grid_BC(user, TA_tar_name, name_TA, input_path, run_type):
     file.write('# Copy datafiles from $CONDOR_INPUT onto worker node (/srv)\n')
     file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/ProcessedData* .\n')
     file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/' + TA_tar_name + ' .\n')
-    if run_type == 'beam' or run_type == 'laser':      # only copy LAPPD ped folder for runs where LAPPD data is built
+    if run_type == 'beam' or run_type == 'laser' or run_type == 'beam_39':      # only copy LAPPD ped folder for runs where LAPPD data is built
         file.write('${JSB_TMP}/ifdh.sh cp -D $CONDOR_DIR_INPUT/${PED}.tar.gz .\n')
     file.write('\n')
 
@@ -585,7 +589,7 @@ def grid_BC(user, TA_tar_name, name_TA, input_path, run_type):
     file.write('rm ' + TA_tar_name + '\n')
     file.write('\n')
 
-    if run_type == 'beam' or run_type == 'laser':
+    if run_type == 'beam' or run_type == 'laser' or run_type == 'beam_39':
         file.write('# un-tar LAPPD Pedestal\n')
         file.write('tar -xzf ${PED}.tar.gz\n')
         file.write('rm ${PED}.tar.gz\n')
@@ -632,10 +636,10 @@ def grid_BC(user, TA_tar_name, name_TA, input_path, run_type):
     file.write('echo "Moving the output files to CONDOR OUTPUT..." >> ${DUMMY_OUTPUT_FILE}\n')
     file.write('${JSB_TMP}/ifdh.sh cp -D /srv/logfile*.txt $CONDOR_DIR_OUTPUT     # log files\n')
     file.write('${JSB_TMP}/ifdh.sh cp -D /srv/*.ntuple.root $CONDOR_DIR_OUTPUT    # Modify: any .root files etc.. that are produced from your toolchain\n')
-    if run_type == 'beam' or run_type == 'laser':
+    if run_type == 'beam' or run_type == 'laser' or run_type == 'beam_39':
         file.write('${JSB_TMP}/ifdh.sh cp -D /srv/*.lappd.root $CONDOR_DIR_OUTPUT     # LAPPD BeamCluster\n')
         file.write('${JSB_TMP}/ifdh.sh cp -D /srv/FilteredAllLAPPDData* $CONDOR_DIR_OUTPUT    # Filtered LAPPD Data\n')
-    if run_type == 'beam' or run_type == 'cosmic':     # only cosmic and MRD runs will have MRD data streams
+    if run_type == 'beam' or run_type == 'cosmic' or run_type == 'beam_39':     # only cosmic and MRD runs will have MRD data streams
         file.write('${JSB_TMP}/ifdh.sh cp -D /srv/FilteredMRDData* $CONDOR_DIR_OUTPUT    # Filtered MRD Data\n')
     file.write('\n')
     file.write('echo "" >> ${DUMMY_OUTPUT_FILE}\n')
@@ -710,7 +714,7 @@ def container_BC(name_TA, input_path, run_type):
     file.write('echo "" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
     file.write('\n')
 
-    if run_type == 'beam' or run_type == 'laser':
+    if run_type == 'beam' or run_type == 'laser' or run_type == 'beam_39':
         file.write('# place the LAPPD pedestal folder in the TA folder\n')
         file.write('\cp -r /srv/${PED} /srv/' + name_TA + '/ \n')
         file.write('\n')
@@ -730,7 +734,7 @@ def container_BC(name_TA, input_path, run_type):
     file.write('cd ../../\n')
     file.write('\n')
 
-    if run_type == 'beam' or run_type == 'laser':
+    if run_type == 'beam' or run_type == 'laser' or run_type == 'beam_39':
         # Append LAPPD Pedestal folder to Configs in LAPPDProcessedAna
         file.write('# append Configs for LAPPD Pedestal file \n')
         file.write('echo "LAPPD Pedestal arg: ${PED}" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
@@ -753,7 +757,7 @@ def container_BC(name_TA, input_path, run_type):
     file.write('\n')
 
     # Only run the filtering over beam runs (we only care about producing LAPPD + MRD filtered runs for beam)
-    if run_type == 'beam':
+    if run_type == 'beam' or run_type == 'beam_39':
         file.write('# Run the event filter for the LAPPD and MRD\n')
         file.write('rm configfiles/LAPPDProcessedFilter/list.txt\n')
         file.write('\cp configfiles/BeamClusterAnalysis/my_inputs.txt configfiles/LAPPDProcessedFilter/list.txt\n')
@@ -783,7 +787,7 @@ def container_BC(name_TA, input_path, run_type):
 
     file.write('# copy any produced files to /srv for extraction\n')
     file.write('cp *.ntuple.root /srv/\n')
-    if run_type == 'beam':
+    if run_type == 'beam' or run_type == 'beam_39':
         file.write('cp *.lappd.root /srv/\n')
         file.write('cp FilteredMRDData /srv/FilteredMRDData_${PART_NAME}_${PI}_${PF}\n')
         file.write('cp FilteredAllLAPPDData /srv/FilteredAllLAPPDData_${PART_NAME}_${PI}_${PF}\n')

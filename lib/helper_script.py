@@ -42,7 +42,7 @@ def get_runs_from_user():
 
 # ask the user for a run type
 def get_run_type():
-    run_type_list = ['beam', 'cosmic', 'AmBe', 'LED', 'laser']
+    run_type_list = ['beam', 'cosmic', 'AmBe', 'LED', 'laser', 'beam_39']
     print('Please select a run type from the list below:   (1, 2, 3, 4, or 5)  ')
     runtype_verbose = """
     - beam (1)
@@ -50,14 +50,17 @@ def get_run_type():
     - AmBe (3)
     - LED (4)
     - laser (5)
+    - beam LAPPD PPS 1 (6)
     """
     print(runtype_verbose)
     run_type = int(input('->   '))
-    if run_type not in [1,2,3,4,5]:
-        print("\nWRONG INPUT! Please type '1', '2', '3', '4', or '5' and RE-RUN SCRIPT\nExiting...\n")
+    if run_type not in [1,2,3,4,5,6]:
+        print("\nWRONG INPUT! Please type '1', '2', '3', '4', '5', or '6' and RE-RUN SCRIPT\nExiting...\n")
         exit()
     else:
         print('\nYou have selected:', run_type_list[run_type-1], '(', run_type, ')\n')
+        if run_type == 6:
+            print('Setting LAPPD PPS ratio from the default (10) to 1\n')
         time.sleep(1)
         return run_type_list[run_type-1]
 
@@ -135,7 +138,7 @@ def read_SQL(SQL_file, runs):
     runconfigs = [data['runconfig'] for data in run_data.values() if data['runconfig'] is not None]
     unique_runconfigs = set(runconfigs)
 
-    # beam runs
+    # beam runs (TODO: fix this to flag runs with mixed PPS 1 and PPS 10 (34 + 39))
     beam_run_types = {39, 34, 3}
     
     # Check for consistent run configurations: we dont want to process beam runs with the same grid resources
@@ -342,7 +345,7 @@ def missing_scratch(run_number, raw_path, output_path, run_type):
     processed_dir = output_path + run_number + "/"
 
     # different build types are going to create ProcessedData with different basenames
-    if run_type == 'beam':
+    if run_type == 'beam' or run_type == 'beam_39':
         basename = "ProcessedData_PMTMRDLAPPD_R"
     elif run_type == 'AmBe' or run_type == 'LED':
         basename = 'ProcessedData_PMT_R'
@@ -370,7 +373,7 @@ def missing_after_transfer(run_number, raw_path, data_path, run_type):
     raw_data_dir = raw_path + run_number + "/"
     processed_dir = data_path + "R" + run_number + "/"
 
-    if run_type == 'beam':
+    if run_type == 'beam' or run_type == 'beam_39':
         basename = "ProcessedData_PMTMRDLAPPD_R"
         indy = 34    # used to "hack" off the part file number below (in missing_files.append line)
     elif run_type == 'AmBe' or run_type == 'LED':
@@ -522,10 +525,14 @@ def BC_breakup(run_number, data_path, part_size, run_type):
 
     processed_dir = data_path + "R" + run_number + "/"
 
-    if run_type == 'beam' or run_type == 'cosmic':
+    if run_type == 'beam' or run_type == 'beam_39':
         basename = "ProcessedData_PMTMRDLAPPD_R"
-    elif run_type == 'AmBe' or run_type == 'laser' or run_type == 'LED':
+    elif run_type == 'laser':
         basename = 'ProcessedData_PMTLAPPD_R'
+    elif run_type == 'AmBe' or run_type == 'LED':
+        basename = 'ProcessedData_PMT_R'
+    elif run_type == 'cosmic':
+        basename = 'ProcessedData_PMTMRD_R'
 
     # Get the list of processed files
     processed_files = [file for file in os.listdir(processed_dir) if file.startswith(basename + run_number) and not file.endswith(".data")]

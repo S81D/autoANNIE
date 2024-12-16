@@ -20,7 +20,7 @@ run_type = sys.argv[14]                                       # run type (beam, 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
-if run_type == 'beam':
+if run_type == 'beam' or run_type == 'beam_39':
         basename = "ProcessedData_PMTMRDLAPPD_R"
         indy = 34    # used to "hack" off the part file number below (in missing_files.append line)
 elif run_type == 'AmBe' or run_type == 'LED':
@@ -68,7 +68,7 @@ if missing == 'n':
 
     # calculate disk space requirements
     import math
-    if run_type == 'beam':
+    if run_type == 'beam' or run_type == 'beam_39':
         disk_space = str(math.ceil(8 + .5*(step_size+2)))     # refined for beam runs based on job histories
     elif run_type == 'AmBe':
         disk_space = str(math.ceil(13 + .75*(step_size+2)))   # works out to around 15 GB for 2+2
@@ -170,7 +170,7 @@ if missing == 'y':
 
     # calculate disk space requirements
     import math
-    if run_type == 'beam':
+    if run_type == 'beam' or run_type == 'beam_39':
         disk_space = str(math.ceil(8 + .5*(step_size+2)))     # refined for beam runs based on job histories
     elif run_type == 'AmBe':
         disk_space = str(math.ceil(13 + .75*(step_size+2)))   # works out to around 15 GB for 2+2
