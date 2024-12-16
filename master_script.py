@@ -204,7 +204,7 @@ if which_mode == '1':      # Event building mode
     print('Moving onto BeamFetcher...\n')
     time.sleep(1)
 
-    if run_type == 'beam':
+    if run_type == 'beam' or run_type == 'beam_39':
         for run in runs_to_run:
             hs.beamfetcher(run, 10, raw_path, app_path, scratch_path, singularity, beamfetcher_path)
     else:
@@ -440,7 +440,7 @@ if which_mode == '2':        # BeamCluster
                     time.sleep(1)
 
                     # any LAPPD-related files will only be created for beam runs. We dont need LAPPD root files or filtered files for laser runs. We can just use the normal BC output.
-                    if run_type == 'beam':
+                    if run_type == 'beam' or run_type == 'beam_39':
                         # Second, merge the LAPPDBeamCluster files into one
                         print('\nMerging LAPPDBeamCluster files...\n')
                         os.system('sh lib/merge_it.sh ' + singularity + ' ' + BC_scratch_output_path + ' ' + runs_to_run[i] + ' ' + 'LAPPD')
@@ -455,7 +455,7 @@ if which_mode == '2':        # BeamCluster
                     complete_BC += 1
                     time.sleep(1)
 
-                    if run_type == 'beam':
+                    if run_type == 'beam' or run_type == 'beam_39':
                         # LAPPDBeamCluster
                         os.system('sh BeamCluster/BC_copy.sh ' + runs_to_run[i] + ' ' + beamcluster_path + ' ' + scratch_path + ' ' + 'LAPPD' + ' ' + lappd_BC_path + ' ' + BC_scratch_output_path + ' ' + lappd_filter_path + ' ' + mrd_filter_path)
                         time.sleep(1)
