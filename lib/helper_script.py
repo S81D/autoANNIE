@@ -97,6 +97,7 @@ def read_SQL(SQL_file, runs):
         2022: (datetime(2022, 3, 13, 2, 0, 0), datetime(2022, 11, 6, 1, 0, 0)),
         2023: (datetime(2023, 3, 12, 2, 0, 0), datetime(2023, 11, 5, 1, 0, 0)),
         2024: (datetime(2024, 3, 10, 2, 0, 0), datetime(2024, 11, 3, 1, 0, 0)),
+        2025: (datetime(2025, 3, 9, 2, 0, 0), datetime(2025, 11, 2, 1, 0, 0)),
     }
 
     with open(SQL_file, 'r') as file:
