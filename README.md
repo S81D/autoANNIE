@@ -6,8 +6,7 @@ Scripts to Event build and create ANNIEEvent root files on the grid.
 
 ### Contents:
 - `master_script.py` runs and executes the task.
-- `tar_ball_create_script.py` will tar-ball your local copy of ToolAnalysis in preparation for grid submission.
-- `lib/` folder contains helper scripts.
+- `lib/` folder contains helper scripts, including a script that can tar-ball your local copy of ToolAnalysis in preparation for grid submission.
 - `BeamCluster/` folder contains a "holding" area for grid submission scripts that are separate from the event building scripts.
 - `run_processing/` folder contains a helpful script to assess the percentage of runs that have currently been processed.  
 
@@ -21,7 +20,7 @@ Scripts to Event build and create ANNIEEvent root files on the grid.
      - `echo "Select * from run order by id desc" | psql annie -h localhost -p 5433 -d rundb > ANNIE_SQL_RUNS.txt`
    - Copy it from your local computer to your scratch area:
      - ```scp ANNIE_SQL_RUNS.txt <username>@anniegpvm02.fnal.gov:/pnfs/annie/scratch/users/<username>/<repo_name>/.```
-3. Tar your ToolAnalysis directory via: ```tar -czvf <tarball_name>.tar.gz -C /<path_to_user_directory> <ToolAnalysis_folder>```. Running ```python3 tarball_create_script.py``` will create the tarball for you (modify path and folder names within the script accordingly).
+3. Tar your ToolAnalysis directory via: ```tar -czvf <tarball_name>.tar.gz -C /<path_to_user_directory> <ToolAnalysis_folder>```. Running ```python3 lib/tarball_create_script.py``` will create the tarball for you (modify path and folder names within the script accordingly).
 4. Copy this tar-ball to your scratch user directory (```/pnfs/annie/scratch/users/<username>/<repo_name>/```).
 5. Edit ```master_script.py``` to reflect your username, the bind mounted folders you are using when entering the singularity container, the name of the ANNIE SQL txt file you generated, and other paths.
 6. Run the the master script: ```python3 master_script.py``` and specify which mode you want to use: (1) for EventBuilder, (2) for BeamClusterAnalysis jobs, and provide the necessary user inputs when prompted.
