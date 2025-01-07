@@ -264,7 +264,7 @@ def trig_overlap(run, trig_path, app_path, scratch_path, singularity):
 
 
 # produce beamfetcher part files
-def beamfetcher(run, step_size, raw_path, app_path, singularity, beamfetcher_path):
+def beamfetcher(run, step_size, raw_path, app_path, scratch_path, singularity, beamfetcher_path):
 
     os.system('rm beam.list')
     os.system('echo "' + run + '" >> beam.list')
@@ -301,7 +301,7 @@ def beamfetcher(run, step_size, raw_path, app_path, singularity, beamfetcher_pat
         for i in range(len(start_indices)):
             print('\nRun ' + run + '  parts ' + start_indices[i] + '-' + end_indices[i])
             print('***********************************************************\n')
-            os.system('sh lib/run_beamfetcher.sh ' + start_indices[i] + ' ' + end_indices[i] + ' ' + app_path + ' ' + raw_path + ' ' + singularity)
+            os.system('sh lib/run_beamfetcher.sh ' + start_indices[i] + ' ' + end_indices[i] + ' ' + app_path + ' ' + scratch_path + ' ' + raw_path + ' ' + singularity)
             time.sleep(1)
 
             # verify the file executed and there wasn't a toolchain crash (it will be very small if it failed < 5KB)
@@ -311,7 +311,7 @@ def beamfetcher(run, step_size, raw_path, app_path, singularity, beamfetcher_pat
             if size < 5:   # smaller than 5KB - for now, just re-run once
                 print('\nbeamfetcher file just produced is less than 5 KB - there must have been a crash')
                 print('\nrerunning....')
-                os.system('sh lib/run_beamfetcher.sh ' + start_indices[i] + ' ' + end_indices[i] + ' ' + app_path + ' ' + raw_path + ' ' + singularity)
+                os.system('sh lib/run_beamfetcher.sh ' + start_indices[i] + ' ' + end_indices[i] + ' ' + app_path + ' ' + scratch_path + ' ' + raw_path + ' ' + singularity)
             else:
                 print('\nFile looks good (over 5KB). Proceeding to the next one...')
 
