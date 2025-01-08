@@ -6,7 +6,7 @@ Scripts to Event build and create ANNIEEvent root files on the grid.
 
 ### Contents:
 - `master_script.py` runs and executes the task.
-- `lib/` folder contains helper scripts, including a script that can tar-ball your local copy of ToolAnalysis in preparation for grid submission.
+- `lib/` folder contains helper scripts.
 - `BeamCluster/` folder contains a "holding" area for grid submission scripts that are separate from the event building scripts.
 - `run_processing/` folder contains a helpful script to assess the percentage of runs that have currently been processed.  
 
@@ -36,6 +36,8 @@ Scripts to Event build and create ANNIEEvent root files on the grid.
 - No additional modifications of the ToolAnalysis directory is needed prior to tar-balling. The scripts will handle DLS, input filename modifications, LAPPD pedestal files, etc... (assuming you are using the latest event building version).
 
 - Both the ```BeamClusterAnalysis``` and ```EventBuilding``` features of this script will submit the same tar-ball of ToolAnalysis.
+
+- `lib/check_run_status.py` is a helpful script that will output a snapshot of which runs have yet to be processed. Usage: `python3 lib/check_run_status.py`
 
 - An event building guide using ToolAnalysis can be found here: https://cdcvs.fnal.gov/redmine/projects/annie_experiment/wiki/Event_Building_with_ToolAnalysis
 
