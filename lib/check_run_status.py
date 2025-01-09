@@ -16,6 +16,8 @@ run_type = ['3', '34', '39']   # specify run type you would like to check
 
 runtype_flag = '39'            # mostly for beam runs --> 39 is different as it is PPS 1
 
+min_part_size = 3              # only check for runs with atleast this many part files
+
 ##########################################################################################
 
 # define color codes for text output
@@ -70,6 +72,10 @@ def check_run_data(sql, rawdata_path, prodata_path, runtype_flag):
         # count part files in RAWDATA
         raw_files = glob(os.path.join(raw_run_folder, f"RAWDataR{run_number}S0p*"))
         num_raw_files = len(raw_files)
+
+        # skip the very small runs
+        if num_raw_files < min_part_size:
+            continue
 
         # check if PROCESSED folder exists
         if not os.path.isdir(processed_run_folder):
