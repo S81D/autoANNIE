@@ -134,9 +134,9 @@ if which_mode == '1':      # Event building mode
     else:
         print('\nWRONG INPUT, RE-RUN SCRIPT\n')
         exit()
-    
-    runs_to_run_user = hs.get_runs_from_user()
 
+    print('\n')
+    runs_to_run_user = hs.get_runs_from_user()
 
     print('\nVetting the runs you submitted...')
     runs_to_run = []; DLS = []    # final lists to be used in event building
