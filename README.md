@@ -8,7 +8,6 @@ Scripts to Event build and create ANNIEEvent root files on the grid.
 - `master_script.py` runs and executes the task.
 - `lib/` folder contains helper scripts.
 - `BeamCluster/` folder contains a "holding" area for grid submission scripts that are separate from the event building scripts.
-- `run_processing/` folder contains a helpful script to assess the percentage of runs that have currently been processed.  
 
 ### Usage:
 
