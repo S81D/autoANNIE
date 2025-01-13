@@ -353,8 +353,8 @@ if which_mode == '2':        # BeamCluster
 
     # create job submission scripts  (since these scripts take args, we don't need to keep creating them for every job)
     sj.submit_BC(scratch_path, BC_scratch_output_path, TA_tar_name, data_path, node_loc, lappd_pedestal_path)
-    sj.grid_BC(user, TA_tar_name, TA_folder, scratch_path)
-    sj.container_BC(TA_folder, scratch_path)
+    sj.grid_BC(user, TA_tar_name, TA_folder, scratch_path, run_type)
+    sj.container_BC(TA_folder, scratch_path, run_type)
     time.sleep(1)
 
     BC_job_size = 50       # how many part files per job  (500 is the recommended max)
