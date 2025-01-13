@@ -19,8 +19,7 @@ Scripts to Event build and create ANNIEEvent root files on the grid.
      - `echo "Select * from run order by id desc" | psql annie -h localhost -p 5433 -d rundb > ANNIE_SQL_RUNS.txt`
    - Copy it from your local computer to your scratch area:
      - ```scp ANNIE_SQL_RUNS.txt <username>@anniegpvm02.fnal.gov:/pnfs/annie/scratch/users/<username>/<repo_name>/.```
-3. Tar your ToolAnalysis directory via: ```tar -czvf <tarball_name>.tar.gz -C /<path_to_user_directory> <ToolAnalysis_folder>```. Running ```python3 lib/tarball_create_script.py``` will create the tarball for you (modify path and folder names within the script accordingly).
-4. Copy this tar-ball to your scratch user directory (```/pnfs/annie/scratch/users/<username>/<repo_name>/```).
+3. Tar your ToolAnalysis directory via: ```tar -czvf <tarball_name>.tar.gz -C /<path_to_user_directory> <ToolAnalysis_folder>```. Running ```python3 lib/tarball_create_script.py``` will create the tarball for you and copy it to your `scratch` area (modify path and folder names within the script accordingly). If you tar-balled the directory manually, copy it to your scratch user directory (```/pnfs/annie/scratch/users/<username>/<repo_name>/```).
 5. Edit ```master_script.py``` to reflect your username, the bind mounted folders you are using when entering the singularity container, the name of the ANNIE SQL txt file you generated, and other paths.
 6. Run the the master script: ```python3 master_script.py``` and specify which mode you want to use: (1) for EventBuilder, (2) for BeamClusterAnalysis jobs, and provide the necessary user inputs when prompted.
 
@@ -30,7 +29,7 @@ Scripts to Event build and create ANNIEEvent root files on the grid.
 
 - For the event building, the local copy of ToolAnalysis in ```/exp/annie/app/users/<username>/``` will be used to run the ```PreProcessTrigOverlap``` and ```BeamFetcherV2``` toolchains to create the necessary files prior to submitting grid jobs. This is why it is recommended to have an "event building" ToolAnalysis folder present in your `/exp/annie/app/` area.
 
-- Also for the event building, there are two options to submit runs - manaully (enter run by run) or through a list. For mass re-production of data, it is easier to populate a list named ```runs.list``` with the associated run numbers. If you elect to use the list, make sure there is a ```runs.list``` present in the working ```scratch/``` directory.
+- There are two options to submit runs: manaully (enter run by run) or through a list. For mass re-production of data, it is easier to populate a list named ```runs.list``` with the associated run numbers. If you elect to use the list, make sure there is a ```runs.list``` present in the working ```scratch``` directory.
 
 - No additional modifications of the ToolAnalysis directory is needed prior to tar-balling. The scripts will handle DLS, input filename modifications, LAPPD pedestal files, etc... (assuming you are using the latest event building version).
 
