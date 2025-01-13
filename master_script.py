@@ -318,6 +318,7 @@ if which_mode == '2':        # BeamCluster
     else:
         print('\nWRONG INPUT, RE-RUN SCRIPT\n')
         exit()
+    print('\n')
     runs_to_run = hs.get_runs_from_user()
 
     print('\n\n\n')
