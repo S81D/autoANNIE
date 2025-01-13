@@ -317,7 +317,7 @@ def run_container_job(run, name_TA, DLS, first, final, run_type):
     file.write('\n')
 
     # Create DaylightSavings Config for MRD
-    if run_type == 'beam' or run_type == 'cosmic or run_type == 'beam_39'':
+    if run_type == 'beam' or run_type == 'cosmic' or run_type == 'beam_39':
         file.write('# append MRDDataDecoder for DLS \n')
         file.write("sed -i '$ s/.*/DaylightSavingsSpring " + DLS + "/' configfiles/" + eventbuilder_TC + "/MRDDataDecoderConfig \n")
         file.write('echo "MRDDataDecoderConfig (DLS ' + DLS + ' was selected)" >> /srv/logfile_${PART_NAME}.txt \n')
