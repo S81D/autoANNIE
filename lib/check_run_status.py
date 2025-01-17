@@ -28,7 +28,7 @@ RED = "\033[91m"
 
 rawdata_path = '/pnfs/annie/persistent/raw/raw/'
 prodata_path = '/pnfs/annie/persistent/processed/processed_EBV2/'
-SQL_path = '/pnfs/annie/scratch/users/doran/autoANNIE_v14/ANNIE_SQL_RUNS.txt'
+SQL_path = '../ANNIE_SQL_RUNS.txt'
     
 # grab the run types from the SQL file
 def read_SQL(SQL_file, run_back, run_type):
