@@ -11,7 +11,7 @@ Scripts to Event build and create ANNIEEvent root files on the grid.
 
 ### Usage:
 
-1. After cloning a copy of this repo to your user directory in ```/pnfs/annie/scratch/users/<username>/```, make sure you have the latest copy of ToolAnalysis built in ```/exp/annie/app/users/<username>/```. It is recommended to keep this directory present and up to date and use it exclusively for these grid jobs.
+1. After cloning a copy of this repo to your user directory in ```/pnfs/annie/scratch/users/<username>/```, make sure you have the latest copy of ToolAnalysis built in ```/exp/annie/app/users/<username>/```. The scripts will first run pre processing toolchains using this directory before submitting grid jobs, so it is recommended to keep this directory present and up to date and use it exclusively for the event building procedure. 
 2. The MRD subsystem records data in CDT (and is therefore daylight savings (DLS) dependent). To ensure we enable the correct DLS configuration in the `MRDDataDecoder` tool for the event building toolchain, we must first fetch and generate an SQL txt file from the DAQ's database. Create this txt file locally (based on the following instructions from Marvin: https://cdcvs.fnal.gov/redmine/projects/annie_experiment/wiki/DAQ's_DB_in_the_gpvm): 
    - From your local computer, open a terminal and establish an SSH tunneling:
      - `ssh -K -L 5433:192.168.163.21:5432 annie@annie-gw01.fnal.gov`
