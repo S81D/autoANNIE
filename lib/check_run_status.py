@@ -10,7 +10,9 @@ from glob import glob
 
 ##########################################################################################
 
-run_back = 5000                # the script will only check runs this far back
+run_to = 4725                  # the script will show runs up to this one (set to 'current' to display latest runs)
+
+run_back = 4001                # the script will only check runs this far back
 
 run_type = ['3', '34', '39']   # specify run type you would like to check
 
@@ -49,7 +51,12 @@ def read_SQL(SQL_file, run_back, run_type):
                 runnum = columns[1]
                 runconfig = columns[5]   # run type
 
-            if int(runnum) >= int(run_back) and runconfig in run_type:    
+            # 'current' means we don't want a "ceiling" on the runs we display
+            if run_to == 'current':
+                if int(runnum) >= int(run_back) and runconfig in run_type:
+                    run_data[runnum] = int(runconfig) if runconfig.isdigit() else None
+            else:
+                if int(run_to) >= int(runnum) >= int(run_back) and runconfig in run_type:    
                     run_data[runnum] = int(runconfig) if runconfig.isdigit() else None
 
     return run_data
