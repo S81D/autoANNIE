@@ -139,7 +139,6 @@ def read_SQL(SQL_file, runs):
     runconfigs = [data['runconfig'] for data in run_data.values() if data['runconfig'] is not None]
     unique_runconfigs = set(runconfigs)
 
-    # beam runs (TODO: fix this to flag runs with mixed PPS 1 and PPS 10 (34 + 39))
     beam_run_types = {39, 34, 3}
     
     # Check for consistent run configurations: we dont want to process beam runs with the same grid resources
