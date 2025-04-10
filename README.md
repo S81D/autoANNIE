@@ -43,6 +43,8 @@ Scripts to Event build and create ANNIEEvent root files on the grid.
 
 - Running event building jobs now works on the FNAL-only nodes. More testing is needed to work out additional bugs. For now (October 2024), it is recommended to continue to run the jobs OFFSITE.
 
+- The default LAPPD PPS for beam runs (34) was 10, before run 5140. After this run, this was changed to PPS 5. The scripts have a condition where this is hardcoded, but something to keep in mind if the PPS is changing more frequently in the future.
+
 -----------------------
 
 To check on your jobs, use: ```jobsub_q -G annie --user <<username>>```
