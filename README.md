@@ -80,6 +80,8 @@ autoANNIE/
 
 - The default LAPPD PPS for beam runs (34) was 10, before run 5140. After this run, this was changed to PPS 5. The scripts have a condition where this is hardcoded, but something to keep in mind if the PPS is changing more frequently in the future.
 
+- Job resources have not been fully optimized. General recommendations are embedded in the code. Memory and wall time are given in `submit_jobs.py`. Disk space is estimated in `automated_submission.py`. Feel free to test and change these as needed.
+
 -----------------------
 
 To check on your jobs, use: ```jobsub_q -G annie --user <<username>>```
