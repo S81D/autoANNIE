@@ -24,7 +24,9 @@ autoANNIE/
 ├── scripts/                       # standalone scripts for various tasks
 │   ├── check_run_status.py        #      - output a snapshot of which runs have yet to be processed
 │   ├── tarball_create_script.py   #      - tar-balls toolanalysis for grid submission
-│   └── is_transferred.sh          #      - checks filesize of last RAWData part files
+│   ├── copy_runs.py               #      - copy multiple runs from scratch to persistent, outside of the normal EventBuilding scripts
+│   ├── missing_scratch.py         #      - checks how many part files are processed (in scratch)
+│   └── is_transferred.sh          #      - checks filesize of last RAWData part files; used to make sure run is fully transferred from the DAQ
 └── README.md                      
 ```
 
@@ -43,6 +45,15 @@ autoANNIE/
 5. Edit ```master_script.py``` to reflect your username, the bind mounted folders you are using when entering the singularity container, the name of the ANNIE SQL txt file you generated, and other paths.
 6. Run the the master script: ```python3 master_script.py``` and specify which mode you want to use: (1) for EventBuilder, (2) for BeamClusterAnalysis jobs, and provide the necessary user inputs when prompted.
 
+
+#### scripts/ usage
+
+* `python3 scripts/check_run_status.py`
+* `python3 scripts/copy_runs.py`
+* `python3 scripts/missing_scratch.py`
+* `python3 scripts/tarball_create_script.py`
+* `sh scripts/is_transferred.sh`
+
 -----------------------
 
 ### Additional information
@@ -51,11 +62,11 @@ autoANNIE/
 
 - There are two options to submit runs: manaully (enter run by run) or through a list. For mass re-production of data, it is easier to populate a list named ```runs.list``` with the associated run numbers. If you elect to use the list, make sure there is a ```runs.list``` present in the working ```scratch``` directory.
 
+- Similarily, for `scripts/copy_runs.py` you must populate a `runs.list` file containing all runs you wish to transfer from scratch to persistent.
+
 - No additional modifications of the ToolAnalysis directory is needed prior to tar-balling. The scripts will handle DLS, input filename modifications, LAPPD pedestal files, etc... (assuming you are using the latest event building version).
 
 - Both the ```BeamClusterAnalysis``` and ```EventBuilding``` features of this script will submit the same tar-ball of ToolAnalysis.
-
-- `scripts/check_run_status.py` is a helpful script that will output a snapshot of which runs have yet to be processed. Usage: `python3 scripts/check_run_status.py`
 
 - `scripts/is_transferred.sh` will display the final few RAWData part files for a given run. It takes time for the runs to be transferred from the DAQ to the gpvms. If a run is fully transferred, the final part file should be smaller than the average (~50% or so). Checking the timestamp of transfer vs when the run is complete is also a good indication; we don't want to event build a run that is only partially transferred. Usage: `python3 scripts/is_transferred.sh`
 
