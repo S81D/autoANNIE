@@ -5,9 +5,27 @@ Scripts to Event build and create ANNIEEvent root files on the grid.
 -----------------------
 
 ### Contents:
-- `master_script.py` runs and executes the task.
-- `lib/` folder contains helper scripts.
-- `BeamCluster/` folder contains a staging area for grid submission scripts that are separate from the event building scripts.
+
+```
+autoANNIE/
+├── master_script.py               # runs and executes the event building, data processing, and transferring
+├── lib/                           # folder contains helper scripts
+│   ├── helper_script.py
+│   ├── automated_submission.py
+│   ├── submit_jobs.py
+│   ├── run_trig.sh
+│   ├── run_beamfetcher.sh
+│   ├── merge_it.sh
+│   ├── mergeBeamTrees.C
+│   └── copy_grid_output.sh
+├── BeamCluster/                   # staging area for grid submission scripts that are separate from the event building scripts
+├── scripts/                       # standalone scripts for various tasks
+│   ├── check_run_status.py        #      - output a snapshot of which runs have yet to be processed
+│   ├── tarball_create_script.py   #      - tar-balls toolanalysis for grid submission
+│   └── is_transferred.sh          #      - checks filesize of last RAWData part files
+└── README.md                      
+```
+
 
 ### Usage:
 
@@ -19,7 +37,7 @@ Scripts to Event build and create ANNIEEvent root files on the grid.
      - `echo "Select * from run order by id desc" | psql annie -h localhost -p 5433 -d rundb > ANNIE_SQL_RUNS.txt`
    - Copy it from your local computer to your scratch area:
      - ```scp ANNIE_SQL_RUNS.txt <username>@anniegpvm02.fnal.gov:/pnfs/annie/scratch/users/<username>/<repo_name>/.```
-3. Tar your ToolAnalysis directory via: ```tar -czvf <tarball_name>.tar.gz -C /<path_to_user_directory> <ToolAnalysis_folder>```. Running ```python3 lib/tarball_create_script.py``` will create the tarball for you and copy it to your `scratch` area (modify path and folder names within the script accordingly). If you tar-balled the directory manually, copy it to your scratch user directory (```/pnfs/annie/scratch/users/<username>/<repo_name>/```).
+3. Tar your ToolAnalysis directory via: ```tar -czvf <tarball_name>.tar.gz -C /<path_to_user_directory> <ToolAnalysis_folder>```. Running ```python3 scripts/tarball_create_script.py``` will create the tarball for you and copy it to your `scratch` area (modify path and folder names within the script accordingly). If you tar-balled the directory manually, copy it to your scratch user directory (```/pnfs/annie/scratch/users/<username>/<repo_name>/```).
 5. Edit ```master_script.py``` to reflect your username, the bind mounted folders you are using when entering the singularity container, the name of the ANNIE SQL txt file you generated, and other paths.
 6. Run the the master script: ```python3 master_script.py``` and specify which mode you want to use: (1) for EventBuilder, (2) for BeamClusterAnalysis jobs, and provide the necessary user inputs when prompted.
 
@@ -35,7 +53,9 @@ Scripts to Event build and create ANNIEEvent root files on the grid.
 
 - Both the ```BeamClusterAnalysis``` and ```EventBuilding``` features of this script will submit the same tar-ball of ToolAnalysis.
 
-- `lib/check_run_status.py` is a helpful script that will output a snapshot of which runs have yet to be processed. Usage: `python3 lib/check_run_status.py`
+- `scripts/check_run_status.py` is a helpful script that will output a snapshot of which runs have yet to be processed. Usage: `python3 scripts/check_run_status.py`
+
+- `scripts/is_transferred.sh` will display the final few RAWData part files for a given run. It takes time for the runs to be transferred from the DAQ to the gpvms. If a run is fully transferred, the final part file should be smaller than the average (~50% or so). Checking the timestamp of transfer vs when the run is complete is also a good indication; we don't want to event build a run that is only partially transferred. Usage: `python3 scripts/is_transferred.sh`
 
 - An event building guide using ToolAnalysis can be found here: https://cdcvs.fnal.gov/redmine/projects/annie_experiment/wiki/Event_Building_with_ToolAnalysis
 
