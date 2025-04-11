@@ -64,6 +64,8 @@ autoANNIE/
 
 - Similarily, for `scripts/copy_runs.py` you must populate a `runs.list` file containing all runs you wish to transfer from scratch to persistent.
 
+- There is a configuration variable in `master_script.py` (`initial_submission_only`) that when set to `True`, will only submit the initial jobs (no further checking, transferring, or re-submissions). The script will exit after the initial submissions.
+
 - No additional modifications of the ToolAnalysis directory is needed prior to tar-balling. The scripts will handle DLS, input filename modifications, LAPPD pedestal files, etc... (assuming you are using the latest event building version).
 
 - Both the ```BeamClusterAnalysis``` and ```EventBuilding``` features of this script will submit the same tar-ball of ToolAnalysis.
