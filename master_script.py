@@ -31,6 +31,8 @@ grid_output = 'output/'                           # output grid
 
 SQL_file = 'ANNIE_SQL_RUNS.txt'                   # SQL filename
 
+initial_submission_only = False                   # run PreProcess, BeamFetcher, submit the initial jobs and quit
+
 '''@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'''
 
 #
@@ -233,6 +235,10 @@ if which_mode == '1':      # Event building mode
     
     print('\nAll initial jobs submitted\n')
     time.sleep(1)
+
+    if initial_submission_only == True:     # only submit the initial jobs, then quit (no re-submission)
+        print('\nInitial submission only mode... exiting...')
+        exit()
     
     # display active jobs
     os.system('\njobsub_q -G annie --user ' + user + '\n')
