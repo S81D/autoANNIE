@@ -237,7 +237,8 @@ if which_mode == '1':      # Event building mode
     time.sleep(1)
 
     if initial_submission_only == True:     # only submit the initial jobs, then quit (no re-submission)
-        print('\nInitial submission only mode... exiting...')
+        print('\n***Initial submission only*** mode complete... my work here is done!\n')
+        print('\nExiting...\n')
         exit()
     
     # display active jobs
