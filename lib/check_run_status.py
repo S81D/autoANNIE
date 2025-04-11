@@ -1,36 +1,40 @@
 import os
 from glob import glob
 
-# Check run status of event building
+# Check run status of event building and data processing
 # Author: Steven Doran
 
 # output will be:
-#                       [run number] [(run type)] [total raw part files] [total processed part files]
+#         [run number] [(run type)] [total raw part files] [total processed part files] [total scratch part files] [status]
 #  
+
+# script WILL NOT display runs that do not have RAWData missing, or are below the 'min_part_size' threshold
+#        --------
 
 ##########################################################################################
 
-run_to = 4725                  # the script will show runs up to this one (set to 'current' to display latest runs)
+run_to = 5767                  # the script will show runs up to this one (set to 'current' to display latest runs)
 
-run_back = 4001                # the script will only check runs this far back
+run_back = 5300                # the script will only check runs this far back
 
 run_type = ['3', '34', '39']   # specify run type you would like to check
 
-runtype_flag = '39'            # mostly for beam runs --> 39 is different as it is PPS 1
-
 min_part_size = 3              # only check for runs with atleast this many part files
+
+
+# modify accordingly
+rawdata_path = '/pnfs/annie/persistent/raw/raw/'
+prodata_path = '/pnfs/annie/persistent/processed/processed_EBV2/'
+scratch_output = '/pnfs/annie/scratch/users/doran/output/'
+SQL_path = 'ANNIE_SQL_RUNS.txt'
 
 ##########################################################################################
 
 # define color codes for text output
-RESET = "\033[0m"
-CYAN = "\033[96m"  
-YELLOW = "\033[93m"  
-RED = "\033[91m"  
-
-rawdata_path = '/pnfs/annie/persistent/raw/raw/'
-prodata_path = '/pnfs/annie/persistent/processed/processed_EBV2/'
-SQL_path = 'ANNIE_SQL_RUNS.txt'
+RESET = "\033[0m"                      # white = processed and transferred
+YELLOW = "\033[93m"                    # yellow = scratch files present, but not complete
+RED = "\033[91m"                       # red = run not yet processed (no scratch files either)
+GREEN = "\033[92m"                     # green = scratch files complete, ready to be transferred
     
 # grab the run types from the SQL file
 def read_SQL(SQL_file, run_back, run_type):
@@ -62,18 +66,20 @@ def read_SQL(SQL_file, run_back, run_type):
     return run_data
 
 
-def check_run_data(sql, rawdata_path, prodata_path, runtype_flag):
+def check_run_data(sql, rawdata_path, prodata_path):
+
+    # column header
+    print(f"{'RUN':<3} {'TYPE':<2} {'RAW':<3} {'PRO':<3} {'SCRATCH':<3} STATUS")
+    print('-' * 31)
+
     for run_number, run_type in sql.items():
 
         raw_run_folder = os.path.join(rawdata_path, run_number)
         processed_run_folder = os.path.join(prodata_path, f"R{run_number}")
-
-        # we can highlight runs that are of the same run type but are different (like for beam, 39 is PPS 1)
-        run_type_str = f"{CYAN}({run_type}){RESET}" if run_type == int(runtype_flag) else f"({run_type})"
+        scratch_run_folder = os.path.join(scratch_output, run_number)
 
         # check if RAWDATA folder exists
         if not os.path.isdir(raw_run_folder):
-            print(f"{RED}{run_number} {run_type_str} RAWDATA not present{RESET}")
             continue
 
         # count part files in RAWDATA
@@ -87,22 +93,40 @@ def check_run_data(sql, rawdata_path, prodata_path, runtype_flag):
         # check if PROCESSED folder exists
         if not os.path.isdir(processed_run_folder):
 
-            # custom for flagged runs that are not yet processed (cyan + yellow)
-            run_type_str = f"{CYAN}({run_type}){YELLOW}" if run_type == int(runtype_flag) else f"({run_type})"
-            
-            print(f"{YELLOW}{run_number} {run_type_str} {num_raw_files} NOT PROCESSED{RESET}")
+            # if its not processed, check if it exists in scratch
+            if not os.path.isdir(scratch_run_folder):
+                print(f"{RED}{run_number:>4} {run_type:>2} {num_raw_files:>4} {0:>4} {'':>4} NOT PROCESSED{RESET}")
+                continue
+
+            # if there are scratch files are present, count how many are complete
+            scratch_files = glob(os.path.join(scratch_run_folder, f"ProcessedData*R{run_number}S0p*"))
+            num_scratch_files = len(scratch_files)
+
+            # if there are no scratch files (even if the folder exists), mark as not processed
+            if num_scratch_files == 0:
+                print(f"{RED}{run_number:>4} {run_type:>2} {num_raw_files:>4} {0:>4} {'':>4} NOT PROCESSED{RESET}")
+                continue
+
+            # all scratch part files are complete, ready to transfer
+            if num_scratch_files == num_raw_files:
+                print(f"{GREEN}{run_number:>4} {run_type:>2} {num_raw_files:>4} {0:>4} {num_scratch_files:>4} READY TO TRANSFER{RESET}")
+                continue
+
+            # if not ready to transfer, display number of scratch processed
+            print(f"{YELLOW}{run_number:>4} {run_type:>2} {num_raw_files:>4} {0:>4} {num_scratch_files:>4} PARTIALLY COMPLETE{RESET}")
             continue
 
 
-        # count part files in PROCESSED data
+        # count part files in PROCESSED data if already transferred
         processed_files = glob(os.path.join(processed_run_folder, f"ProcessedData*R{run_number}S0p*"))
         num_processed_files = len(processed_files)
 
-        print(f"{run_number} {run_type_str} {num_raw_files} {num_processed_files}")
+        print(f"{run_number:>4} {run_type:>2} {num_raw_files:>4} {num_processed_files:>4}")
+
           
 print('\n')
 sql = read_SQL(SQL_path, run_back, run_type)
-check_run_data(sql, rawdata_path, prodata_path, runtype_flag)
+check_run_data(sql, rawdata_path, prodata_path)
 print('\n')
 
 # done
