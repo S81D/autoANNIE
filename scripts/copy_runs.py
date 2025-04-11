@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 # copy multiple runs to persistent/ outside of the event building main scripts
+# you need to populate a runs.list file (RUN_LIST) with the desired runs to copy
 
 ''' 
 usage: python3 scripts/copy_runs.py
