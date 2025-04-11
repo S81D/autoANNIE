@@ -6,10 +6,12 @@ Scripts to Event build and create ANNIEEvent root files on the grid.
 
 ### Contents:
 
+- `master_script.py` is the primary tool for running the event building proceedure (and creating the BeamClusterAnalysis ntuples).
+
 ```
 autoANNIE/
 ├── master_script.py               # runs and executes the event building, data processing, and transferring
-├── lib/                           # folder contains helper scripts
+├── lib/                           # folder containing helper scripts
 │   ├── helper_script.py
 │   ├── automated_submission.py
 │   ├── submit_jobs.py
