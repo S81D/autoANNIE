@@ -61,7 +61,7 @@ mrd_filter_path = processed_path + 'processed_EBV2_MRDFiltered/'                
 
 raw_path = '/pnfs/annie/persistent/raw/raw/'                                                       # raw data location, transferred from the DAQ
 
-lappd_pedestal_path = '/pnfs/annie/persistent/users/doran/LAPPD_Pedestal/'                         # Pedestal files for the LAPPDs in the BeamCluster jobs
+lappd_pedestal_path = '/pnfs/annie/persistent/processed/processingData_EBV2/LAPPD_Pedestal/'       # Pedestal files for the LAPPDs in the BeamCluster jobs
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # 
