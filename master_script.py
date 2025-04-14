@@ -49,7 +49,7 @@ scratch_path = '/pnfs/annie/scratch/users/' + user + '/' + grid_sub_dir         
 output_path = '/pnfs/annie/scratch/users/' + user + '/' + grid_output                              # general output directory (event building jobs will be outputted directly here)
 BC_scratch_output_path = output_path + 'beamcluster/'                                              # output from the BeamCluster jobs (embedded in folder above)
 
-processed_path = '/pnfs/annie/persistent/processed/'                                               # general directory for "processed" data, such as BeamFetcher files, ProcessedData, etc...
+processed_path = '/pnfs/annie/persistent/processed/processingData_EBV2/'                           # general directory for "processed" data, such as BeamFetcher files, ProcessedData, etc...
 data_path = processed_path + 'processed_EBV2/'                                                     # Processed Data
 trig_path = processed_path + 'trigoverlap/'                                                        # trigger overlap tar files
 beamcluster_path = processed_path + 'BeamClusterTrees/'                                            # BeamCluster root files
@@ -61,7 +61,7 @@ mrd_filter_path = processed_path + 'processed_EBV2_MRDFiltered/'                
 
 raw_path = '/pnfs/annie/persistent/raw/raw/'                                                       # raw data location, transferred from the DAQ
 
-lappd_pedestal_path = '/pnfs/annie/persistent/processed/processed_EBV2_LAPPDFiltered/Pedestal/'    # Pedestal files for the LAPPDs in the BeamCluster jobs
+lappd_pedestal_path = '/pnfs/annie/persistent/users/doran/LAPPD_Pedestal/'                         # Pedestal files for the LAPPDs in the BeamCluster jobs
 
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # 
