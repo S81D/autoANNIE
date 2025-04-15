@@ -24,7 +24,7 @@ min_part_size = 3              # only check for runs with atleast this many part
 
 # modify accordingly
 rawdata_path = '/pnfs/annie/persistent/raw/raw/'
-prodata_path = '/pnfs/annie/persistent/processed/processed_EBV2/'
+prodata_path = '/pnfs/annie/persistent/processed/processingData_EBV2/processed_EBV2/'
 scratch_output = '/pnfs/annie/scratch/users/<user>/output/'          # edit accordingly
 SQL_path = 'ANNIE_SQL_RUNS.txt'
 
