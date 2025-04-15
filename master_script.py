@@ -51,7 +51,7 @@ BC_scratch_output_path = output_path + 'beamcluster/'                           
 
 processed_path = '/pnfs/annie/persistent/processed/processingData_EBV2/'                           # general directory for "processed" data, such as BeamFetcher files, ProcessedData, etc...
 data_path = processed_path + 'processed_EBV2/'                                                     # Processed Data
-trig_path = processed_path + 'trigoverlap/'                                                        # trigger overlap tar files
+trig_path = '/pnfs/annie/persistent/processed/trigoverlap/'                                        # trigger overlap tar files
 beamcluster_path = processed_path + 'BeamClusterTrees/'                                            # BeamCluster root files
 beamfetcher_path = processed_path + 'BeamFetcherV2/'                                               # BeamFetcherV2 root files
 lappd_EB_path = processed_path + 'LAPPD_EB_output/'                                                # contains two subdirectories: LAPPDTree and offsetFit
@@ -90,7 +90,7 @@ usage_verbose = """
 
 # step_size   = number of part files per job for event building (recommendations below)
 #                - beam/cosmic: 3+2
-#                - AmBe: 2+2
+#                - AmBe/laser: 1+2
 # runs_to_run = runs you would like to event build. It will ask you to enter one at a time
 # node_loc    = run OFFSITE or ONSITE (FermiGrid) jobs
 # source_type = run type ("beam", "cosmic", "AmBe", "LED", "laser")
