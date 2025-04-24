@@ -772,7 +772,7 @@ def container_BC(name_TA, input_path, run_type):
         file.write('rm configfiles/BeamClusterAnalysis/my_inputs.txt\n')
         file.write('ls -v FilteredAllLAPPDData >> configfiles/BeamClusterAnalysis/my_inputs.txt\n')
         file.write('cd configfiles/BeamClusterAnalysis\n')
-        file.write('python3 configLAPPD.py ${PART_NAME} ${PI} ${PF} \n')
+        file.write('python3 configLAPPD.py ${PART_NAME} ${PI} ${PF} ' + run_type + '\n')
         file.write('cd ../../\n')
         file.write('echo "File present in filtered my_inputs.txt:" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
         file.write('cat configfiles/BeamClusterAnalysis/my_inputs.txt >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
