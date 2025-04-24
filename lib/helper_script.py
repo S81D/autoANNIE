@@ -563,7 +563,25 @@ def check_root_scratch(run_number,required_count,output_path):
 
     root_files = [file for file in os.listdir(file_path) if file.endswith(".ntuple.root")]
 
-    return len(root_files) == required_count   # true if there are enough root files present
+    if len(root_files) == required_count:   # true if all root files present
+        return True
+    else:
+        return 'INCOMPLETE'                 # not completely done
+
+
+# resubmit the missing BC root files
+def which_ones_to_resub_BC(run_number,output_path,parts_i,parts_f):
+
+    missing_chunks = []
+    file_path = os.path.join(output_path, run_number)
+
+    for pi, pf in zip(parts_i, parts_f):
+        filename = f"BeamCluster_{run_number}_{pi}_{pf}.ntuple.root"
+        full_path = os.path.join(file_path, filename)
+        if not os.path.exists(full_path):
+            missing_chunks.append((pi, pf))
+
+    return missing_chunks
 
 
 # check for BC root file in /persistent

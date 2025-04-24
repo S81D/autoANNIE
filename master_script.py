@@ -312,6 +312,8 @@ if which_mode == '1':      # Event building mode
 
 if which_mode == '2':        # BeamCluster
 
+    BC_job_size = 50         # how many part files per job  (500 is the recommended max)
+
     print(usage_verbose_BC, '\n')
 
     print('\n*** Please ensure the run type is the same for all runs you plan on submitting ***\n')
@@ -335,6 +337,7 @@ if which_mode == '2':        # BeamCluster
     
     print('The following argument has been provided:\n')
     print('  - Runs to run: ', runs_to_run)
+    print('  - job size: ', BC_job_size)
     print('  - node location: ', node_loc)
     print('  - run type: ', run_type)
     print('\n')
@@ -357,14 +360,11 @@ if which_mode == '2':        # BeamCluster
     BC_resubs = [0 for i in range(len(runs_to_run))]
     complete_BC = 0      # when this value == number of runs, the while loop will complete
 
-
     # create job submission scripts  (since these scripts take args, we don't need to keep creating them for every job)
     sj.submit_BC(scratch_path, BC_scratch_output_path, TA_tar_name, data_path, node_loc, lappd_pedestal_path)
     sj.grid_BC(user, TA_tar_name, TA_folder, scratch_path, run_type)
     sj.container_BC(TA_folder, scratch_path, run_type)
     time.sleep(1)
-
-    BC_job_size = 50       # how many part files per job  (500 is the recommended max)
 
     while complete_BC != len(BC_resubs):
 
@@ -403,9 +403,7 @@ if which_mode == '2':        # BeamCluster
                     ped_folder = hs.LAPPD_pedestal(runs_to_run[i])
     
                     for j in range(n_jobs):
-    
                         os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + parts_i[j] + ' ' + parts_f[j] + ' ' + disk_space_factor + ' ' + ped_folder)
-
                         time.sleep(1)
     
                     BC_resubs[i] += 1
@@ -414,23 +412,48 @@ if which_mode == '2':        # BeamCluster
                 elif present_pro == False and present == True:         
                     print('\nall .root file(s) found in /scratch output for Run ' + runs_to_run[i] + ', skipping job submission\n')
                     BC_resubs[i] = -1
+
+
+                # 4. There are some root files present in scratch/ (none in persistent)
+                elif present_pro == False and present == 'INCOMPLETE':
+                    missing_chunks = hs.which_ones_to_resub_BC(runs_to_run[i],BC_scratch_output_path,parts_i,parts_f)
+                    print('\nRun ' + runs_to_run[i] + ' is INCOMPLETE:')
+                    for j in range(len(missing_chunks)):
+                        print('BeamCluster_' + runs_to_run[i] + '_' + missing_chunks[j][0] + '_' + missing_chunks[j][1] + ' missing!')
+                        os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + missing_chunks[j][0] + ' ' + missing_chunks[j][1] + ' ' + disk_space_factor + ' ' + ped_folder)
+                        time.sleep(1)
+                    BC_resubs[i] += 1
+
     
             # no active jobs but re-submitted (get 1 resubmission)
             elif BC_check[i] == True and BC_resubs[i] == 1:
                 
                 present = hs.check_root_scratch(runs_to_run[i],n_jobs,BC_scratch_output_path)
     
+                # if none are present, resubmit all of them
                 if present == False:
                     print('\nRe-submitting BeamCluster job for Run ' + runs_to_run[i] + '...\n')
                     time.sleep(1)
-                    # Just resubmit all of them (TODO: only submit missing files)
                     for j in range(n_jobs):
                         os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + parts_i[j] + ' ' + parts_f[j] + ' ' + disk_space_factor + ' ' + ped_folder)
                         time.sleep(1)
                     BC_resubs[i] += 1
-                else:
+
+                # all root files present and complete
+                elif present == True:
                     print('\nBC job complete for Run ' + runs_to_run[i] + '\n')
                     BC_resubs[i] = -1
+
+                # partial completion
+                elif present == 'INCOMPLETE':
+                    print('\nBC job INCOMPLETE for Run ' + runs_to_run[i])
+                    missing_chunks = hs.which_ones_to_resub_BC(runs_to_run[i],BC_scratch_output_path,parts_i,parts_f)
+                    for j in range(len(missing_chunks)):
+                        print('BeamCluster_' + runs_to_run[i] + '_' + missing_chunks[j][0] + '_' + missing_chunks[j][1] + ' missing!')
+                        os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + missing_chunks[j][0] + ' ' + missing_chunks[j][1] + ' ' + disk_space_factor + ' ' + ped_folder)
+                        time.sleep(1)
+                    BC_resubs[i] += 1
+     
     
             elif BC_check[i] == True and BC_resubs[i] == 2:    # no more jobs, but already re-submitted twice
                 print('\nMax re-submissions reached for run ' + runs_to_run[i] + ' for BC jobs! Will not transfer to /persistent\n')

@@ -1,7 +1,4 @@
-import sys
-
 # this file produces the necessary grid submission scripts
-
 
 # this script is for actually submitting the job to the FermiGrid
 def submit_grid_job(run, p_start, p_end, input_path, output_path, TA_tar_name, disk_space, raw_path, trig_path, beamfetcher_path, first, final, node_loc, run_type):
