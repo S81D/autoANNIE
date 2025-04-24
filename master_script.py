@@ -416,12 +416,18 @@ if which_mode == '2':        # BeamCluster
 
                 # 4. There are some root files present in scratch/ (none in persistent)
                 elif present_pro == False and present == 'INCOMPLETE':
+
+                    # grab the correct lappd pedestal folder
+                    ped_folder = hs.LAPPD_pedestal(runs_to_run[i])
+
                     missing_chunks = hs.which_ones_to_resub_BC(runs_to_run[i],BC_scratch_output_path,parts_i,parts_f)
+
                     print('\nRun ' + runs_to_run[i] + ' is INCOMPLETE:')
                     for j in range(len(missing_chunks)):
-                        print('BeamCluster_' + runs_to_run[i] + '_' + missing_chunks[j][0] + '_' + missing_chunks[j][1] + ' missing!')
+                        print('  - BeamCluster_' + runs_to_run[i] + '_' + missing_chunks[j][0] + '_' + missing_chunks[j][1] + ' missing!')
                         os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + missing_chunks[j][0] + ' ' + missing_chunks[j][1] + ' ' + disk_space_factor + ' ' + ped_folder)
                         time.sleep(1)
+
                     BC_resubs[i] += 1
 
     
@@ -433,6 +439,7 @@ if which_mode == '2':        # BeamCluster
                 # if none are present, resubmit all of them
                 if present == False:
                     print('\nRe-submitting BeamCluster job for Run ' + runs_to_run[i] + '...\n')
+                    ped_folder = hs.LAPPD_pedestal(runs_to_run[i])
                     time.sleep(1)
                     for j in range(n_jobs):
                         os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + parts_i[j] + ' ' + parts_f[j] + ' ' + disk_space_factor + ' ' + ped_folder)
@@ -447,9 +454,10 @@ if which_mode == '2':        # BeamCluster
                 # partial completion
                 elif present == 'INCOMPLETE':
                     print('\nBC job INCOMPLETE for Run ' + runs_to_run[i])
+                    ped_folder = hs.LAPPD_pedestal(runs_to_run[i])
                     missing_chunks = hs.which_ones_to_resub_BC(runs_to_run[i],BC_scratch_output_path,parts_i,parts_f)
                     for j in range(len(missing_chunks)):
-                        print('BeamCluster_' + runs_to_run[i] + '_' + missing_chunks[j][0] + '_' + missing_chunks[j][1] + ' missing!')
+                        print('  - BeamCluster_' + runs_to_run[i] + '_' + missing_chunks[j][0] + '_' + missing_chunks[j][1] + ' missing!')
                         os.system('sh BeamCluster/submit_grid_job.sh ' + runs_to_run[i] + ' ' + missing_chunks[j][0] + ' ' + missing_chunks[j][1] + ' ' + disk_space_factor + ' ' + ped_folder)
                         time.sleep(1)
                     BC_resubs[i] += 1
