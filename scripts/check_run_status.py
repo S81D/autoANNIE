@@ -17,7 +17,7 @@ run_to = 5767                  # the script will show runs up to this one (set t
 
 run_back = 5300                # the script will only check runs this far back
 
-run_type = ['3', '34', '39']   # specify run type you would like to check
+run_type = 'beam'              # specify run type you would like to check ('beam', 'LED', 'cosmic', 'laser', 'AmBe')
 
 min_part_size = 3              # only check for runs with atleast this many part files
 
@@ -35,7 +35,22 @@ RESET = "\033[0m"                      # white = processed and transferred
 YELLOW = "\033[93m"                    # yellow = scratch files present, but not complete
 RED = "\033[91m"                       # red = run not yet processed (no scratch files either)
 GREEN = "\033[92m"                     # green = scratch files complete, ready to be transferred
-    
+
+
+# from run type name, get number
+def get_run_type(run_type):
+    if run_rype == 'beam':
+        return ['3', '34', '39']
+    elif run_type == 'cosmic':
+        return ['7', '37']
+    elif run_type == 'LED':
+        return ['1', '35']
+    elif run_type == 'AmBe':
+        return ['4', '43', '42', '41', '36']    # TODO: check which ones are relevant
+    elif run_type == 'laser':
+        return ['8', '44', '40']
+
+
 # grab the run types from the SQL file
 def read_SQL(SQL_file, run_back, run_type):
     
@@ -125,7 +140,8 @@ def check_run_data(sql, rawdata_path, prodata_path):
 
           
 print('\n')
-sql = read_SQL(SQL_path, run_back, run_type)
+run_type_list = get_run_type(run_type)
+sql = read_SQL(SQL_path, run_back, run_type_list)
 check_run_data(sql, rawdata_path, prodata_path)
 print('\n')
 
