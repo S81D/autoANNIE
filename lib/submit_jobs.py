@@ -357,8 +357,8 @@ def run_container_job(run, name_TA, DLS, first, final, run_type):
     # obtain offsets (need to make sure the right primary trigger word is used)
         if run_type == 'beam':        # PPS = 10s (default)
             if int(run) >= 5140:      # after this run, the default PPS was set to 5
-                file.write('echo "Command: root -l -q offsetFit_MultipleLAPPD.cpp(LAPPDTree.root, 14, 1, 10, 0)" >> /srv/logfile_LAPPD_${PART_NAME}.txt \n')
-                file.write("""root -l -q 'offsetFit_MultipleLAPPD.cpp("LAPPDTree.root", 14, 1, 10, 0)' >> /srv/logfile_LAPPD_${PART_NAME}.txt 2>&1 \n""")
+                file.write('echo "Command: root -l -q offsetFit_MultipleLAPPD.cpp(LAPPDTree.root, 14, 1, 5, 0)" >> /srv/logfile_LAPPD_${PART_NAME}.txt \n')
+                file.write("""root -l -q 'offsetFit_MultipleLAPPD.cpp("LAPPDTree.root", 14, 1, 5, 0)' >> /srv/logfile_LAPPD_${PART_NAME}.txt 2>&1 \n""")
             else:
                 file.write('echo "Command: root -l -q offsetFit_MultipleLAPPD.cpp(LAPPDTree.root, 14, 1, 10, 0)" >> /srv/logfile_LAPPD_${PART_NAME}.txt \n')
                 file.write("""root -l -q 'offsetFit_MultipleLAPPD.cpp("LAPPDTree.root", 14, 1, 10, 0)' >> /srv/logfile_LAPPD_${PART_NAME}.txt 2>&1 \n""")
