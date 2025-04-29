@@ -39,7 +39,7 @@ GREEN = "\033[92m"                     # green = scratch files complete, ready t
 
 # from run type name, get number
 def get_run_type(run_type):
-    if run_rype == 'beam':
+    if run_type == 'beam':
         return ['3', '34', '39']
     elif run_type == 'cosmic':
         return ['7', '37']
