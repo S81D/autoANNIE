@@ -58,6 +58,13 @@ autoANNIE/
 
 ### Additional information
 
+- The following scripts require modification of paths within their headers (modifying your username or the name of the ToolAnalysis directory, for example):
+   * `master_script.py`
+   * `scripts/copy_runs.py`
+   * `scripts/check_run_status.py`
+   * `scripts/missing_scratch.py`
+   * `scripts/tarball_create_script.py`
+
 - For the event building, the local copy of ToolAnalysis in ```/exp/annie/app/users/<username>/``` will be used to run the ```PreProcessTrigOverlap``` and ```BeamFetcherV2``` toolchains to create the necessary files prior to submitting grid jobs. This is why it is recommended to have an "event building" ToolAnalysis folder present in your `/exp/annie/app/` area.
 
 - There are two options to submit runs: manaully (enter run by run) or through a list. For mass re-production of data, it is easier to populate a list named ```runs.list``` with the associated run numbers. If you elect to use the list, make sure there is a ```runs.list``` present in the working ```scratch``` directory.
