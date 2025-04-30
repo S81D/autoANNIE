@@ -89,11 +89,11 @@ usage_verbose = """
 # args: --step_size --runs_to_run --node_loc --source_type
 
 # step_size   = number of part files per job for event building (recommendations below)
-#                - beam/cosmic: 3+2
-#                - AmBe/laser: 1+2
+#                - beam/cosmic:    2+2
+#                - AmBe/laser/LED: 1+2
 # runs_to_run = runs you would like to event build. It will ask you to enter one at a time
 # node_loc    = run OFFSITE or ONSITE (FermiGrid) jobs
-# source_type = run type ("beam", "cosmic", "AmBe", "LED", "laser")
+# source_type = run type ("beam", "cosmic", "AmBe", "LED", "laser", "beam_39")
 
 # Grid job specifications:
 # -- lifetime: 6hr
