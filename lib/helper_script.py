@@ -561,7 +561,10 @@ def check_root_scratch(run_number,required_count,output_path):
     if not os.path.exists(file_path):
         return False
 
-    root_files = [file for file in os.listdir(file_path) if file.endswith(".ntuple.root")]
+    root_files = [     # ignore LAPPD BC files
+        file for file in os.listdir(file_path)
+        if file.endswith(".ntuple.root") and "LAPPD" not in file
+    ]
 
     if len(root_files) == required_count:   # true if all root files present
         return True
