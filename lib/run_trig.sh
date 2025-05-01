@@ -32,6 +32,8 @@ EOF
     
     cp R${run}_TrigOverlap.tar.gz ${trig_path}.
 
+    ls -lrth ${trig_path}/R${run}_TrigOverlap.tar.gz
+
     rm TrigOverlap_R${run}S0p*
 
     rm R${run}_TrigOverlap.tar.gz

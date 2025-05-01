@@ -208,7 +208,7 @@ if which_mode == '1':      # Event building mode
 
     if run_type == 'beam' or run_type == 'beam_39':
         for run in runs_to_run:
-            hs.beamfetcher(run, 10, raw_path, app_path, scratch_path, singularity, beamfetcher_path)
+            hs.beamfetcher(run, app_path, scratch_path, singularity, beamfetcher_path)
     else:
         print('Beam run type not selected - skipping BeamFetcherV2 root file creation...\n')
     

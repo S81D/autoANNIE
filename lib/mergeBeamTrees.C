@@ -7,13 +7,13 @@
 #include <TList.h>
 #include <TSystemFile.h>
 
-// Function to merge BeamTree trees
+// Function to merge root files
 void mergeBeamTrees(const std::string &directory, int runNumber, const std::string &file_name, const std::string &tree_name) {
     // Define the file directory based on the run number and output file name
     std::string runDirectory = directory + "/" + std::to_string(runNumber) + "/";
     std::string outputFileName = file_name + "_" + std::to_string(runNumber) + ".root";
     
-    // Create a TChain to merge BeamTree trees
+    // Create a TChain to merge trees
     TChain chain(tree_name.c_str());
 
     // Create directory object
@@ -26,7 +26,7 @@ void mergeBeamTrees(const std::string &directory, int runNumber, const std::stri
         TIter next(files);
         while ((file = (TSystemFile*)next())) {
             fname = file->GetName();
-            // Normal BeamCluster + beamfetcher root files
+            // Normal BeamCluster root files
             if (file_name != "LAPPDBeamCluster" && fname.BeginsWith(file_name + "_") && fname.EndsWith(".root") && !fname.EndsWith(".lappd.root")) {
                 std::string filePath = runDirectory + fname.Data();
                 std::cout << "Adding file: " << filePath << std::endl;
@@ -52,7 +52,7 @@ void mergeBeamTrees(const std::string &directory, int runNumber, const std::stri
     std::cout << "Merged tree saved to " << outputFileName << std::endl;
 }
 
-// Wrapper function to merge BeamTree trees with provided directory path and run number
+// Wrapper function to merge root trees with provided directory path and run number
 void mergeBeamTreesWrapper(const std::string &directory, int runNumber, const std::string &file_name, const std::string &tree_name) {
     mergeBeamTrees(directory, runNumber, file_name, tree_name);
 }

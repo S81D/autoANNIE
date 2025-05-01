@@ -249,7 +249,6 @@ def trig_overlap(run, trig_path, app_path, scratch_path, singularity):
 
     os.system('rm trig.list')
     os.system('echo "' + run + '" >> trig.list')
-    time.sleep(1)
 
     # does the run have an overlap tar file?
     exists = os.path.isfile(trig_path + 'R' + run + '_TrigOverlap.tar.gz')
@@ -263,7 +262,7 @@ def trig_overlap(run, trig_path, app_path, scratch_path, singularity):
 
 
 # produce beamfetcher part files
-def beamfetcher(run, step_size, raw_path, app_path, scratch_path, singularity, beamfetcher_path):
+def beamfetcher(run, app_path, scratch_path, singularity, beamfetcher_path):
 
     os.system('rm beam.list')
     os.system('echo "' + run + '" >> beam.list')
@@ -273,69 +272,20 @@ def beamfetcher(run, step_size, raw_path, app_path, scratch_path, singularity, b
     
     if exists == False:
 
-        raw_dir = raw_path + run + "/"
+        print('\nNo Beamfetcher file found in /persistent for ' + run + ', producing file now...\n')
+        os.system('sh lib/run_beamfetcher.sh ' + app_path + ' ' + scratch_path + ' ' + beamfetcher_path + ' ' + singularity)
 
-        # temporary storage for created beamfetcher files
-        os.system('mkdir -p ' + app_path + run)
-        
-        # Get the list of raw files and how many
-        raw_files = [file for file in os.listdir(raw_dir) if file.startswith("RAWData")]
-        num_raw_files = len(raw_files)
-
-        if num_raw_files <= step_size:
-            start_indices = ['0']; end_indices = [str(num_raw_files - 1)]
-        else:
-            start_indices = ['0']
-            end_indices = []
-            for i in range(step_size, num_raw_files, step_size):
-                start_indices.append(str(i))
-                end_indices.append(str(i - 1))
-            end_indices.append(str(num_raw_files - 1))
-
-        print('\n' + run + ' has ' + str(int(end_indices[-1])+1) + ' part files. Executing script now...')
-        print('\nSteps to run:')
-        print(start_indices, end_indices)      # lists of starting part file and ending part file
-        time.sleep(1)
-
-        for i in range(len(start_indices)):
-            print('\nRun ' + run + '  parts ' + start_indices[i] + '-' + end_indices[i])
-            print('***********************************************************\n')
-            os.system('sh lib/run_beamfetcher.sh ' + start_indices[i] + ' ' + end_indices[i] + ' ' + app_path + ' ' + scratch_path + ' ' + raw_path + ' ' + singularity)
-            time.sleep(1)
-
-            # verify the file executed and there wasn't a toolchain crash (it will be very small if it failed < 5KB)
-            # TODO - should probably add an exception if its a single part file
-            # For now, re-run once
-            size = os.path.getsize(app_path + 'beamfetcher_tree.root')
-            if size < 5:   # smaller than 5KB - for now, just re-run once
-                print('\nbeamfetcher file just produced is less than 5 KB - there must have been a crash')
-                print('\nrerunning....')
-                os.system('sh lib/run_beamfetcher.sh ' + start_indices[i] + ' ' + end_indices[i] + ' ' + app_path + ' ' + scratch_path + ' ' + raw_path + ' ' + singularity)
-            else:
-                print('\nFile looks good (over 5KB). Proceeding to the next one...')
-
-            time.sleep(1)
-            os.system('cp ' + app_path + 'beamfetcher_tree.root ' + app_path + run + '/beamfetcher_' + run + '_p' + start_indices[i] + '_' + end_indices[i] + '.root')
-            time.sleep(1)
-            os.system('rm ' + app_path + 'beamfetcher_tree.root')
-            time.sleep(1)
-
-        print('\nMerging beam files...\n')
-        os.system('sh lib/merge_it.sh ' + singularity + ' ' + app_path + ' ' + run + ' ' + 'beamfetcher')
-        time.sleep(1)
-        
-        print('\nTransferring beam file...\n')
-        os.system('cp beamfetcher_' + run + '.root ' + beamfetcher_path + '.')
-        time.sleep(1)
-        os.system('ls -lrth ' + beamfetcher_path + 'beamfetcher_' + run + '.root')
-        os.system('rm -rf ' + app_path + run + '/')     # folder to hold the segmented beamfetcher root files
-        os.system('rm beamfetcher_' + run + '.root')
+        # verify the file executed and there wasn't a toolchain crash (it will be very small if it failed < 10KB)
+        size = os.path.getsize(app_path + 'beamfetcher_tree.root')
+        if size < 10:   # smaller than 10KB - for now, just re-run once
+            print('\nbeamfetcher file just produced is less than 10 KB - there must have been a crash')
+            print('\nrerunning....')
+            os.system('sh lib/run_beamfetcher.sh ' + app_path + ' ' + scratch_path + ' ' + beamfetcher_path + ' ' + singularity)
 
     else:
         print('BeamFetcher file present in /persistent for ' + run + ', moving on...\n')
 
     return
-
 
 
 # check output location for missing processed files after job submissions (in /scratch)

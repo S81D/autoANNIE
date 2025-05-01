@@ -5,10 +5,7 @@ FILE_PATH=$2
 RUN=$3
 WHICH=$4
 
-if [ "$WHICH" == "beamfetcher" ]; then
-    FILE_NAME="beamfetcher"
-    TREE_NAME="BeamTree"
-elif [ "$WHICH" == "BC" ]; then
+if [ "$WHICH" == "BC" ]; then
     FILE_NAME="BeamCluster"
     TREE_NAME="Event"
 elif [ "$WHICH" == "LAPPD" ]; then
