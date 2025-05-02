@@ -12,6 +12,10 @@ import math
 # script WILL NOT display runs that do not have RAWData missing, or are below the 'min_part_size' threshold
 #        --------
 
+#
+# if using the BC mode (beamcluster jobs), the output will be:
+#         [run number] [status]
+
 ##########################################################################################
 
 run_to = 5767                  # the script will show runs up to this one (set to 'current' to display latest runs)
