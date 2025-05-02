@@ -275,13 +275,6 @@ def beamfetcher(run, app_path, scratch_path, singularity, beamfetcher_path):
         print('\nNo Beamfetcher file found in /persistent for ' + run + ', producing file now...\n')
         os.system('sh lib/run_beamfetcher.sh ' + app_path + ' ' + scratch_path + ' ' + beamfetcher_path + ' ' + singularity)
 
-        # verify the file executed and there wasn't a toolchain crash (it will be very small if it failed < 10KB)
-        size = os.path.getsize(app_path + 'beamfetcher_tree.root')
-        if size < 10:   # smaller than 10KB - for now, just re-run once
-            print('\nbeamfetcher file just produced is less than 10 KB - there must have been a crash')
-            print('\nrerunning....')
-            os.system('sh lib/run_beamfetcher.sh ' + app_path + ' ' + scratch_path + ' ' + beamfetcher_path + ' ' + singularity)
-
     else:
         print('BeamFetcher file present in /persistent for ' + run + ', moving on...\n')
 
