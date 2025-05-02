@@ -1,5 +1,6 @@
 import os
 from glob import glob
+import math
 
 # Check run status of event building and data processing
 # Author: Steven Doran
@@ -21,11 +22,18 @@ run_type = 'beam'              # specify run type you would like to check ('beam
 
 min_part_size = 3              # only check for runs with atleast this many part files
 
+check_BC = False               # True = check BeamCluster files instead
+
 
 # modify accordingly
 rawdata_path = '/pnfs/annie/persistent/raw/raw/'
 prodata_path = '/pnfs/annie/persistent/processed/processingData_EBV2/processed_EBV2/'
 scratch_output = '/pnfs/annie/scratch/users/<user>/output/'          # edit accordingly
+
+beamcluster_path = '/pnfs/annie/persistent/processed/processingData_EBV2/BeamClusterTrees/'
+BC_scratch_output_path = scratch_output + 'beamcluster/'
+N_per_job = 50   # number of part files per beamcluster job
+
 SQL_path = 'ANNIE_SQL_RUNS.txt'
 
 ##########################################################################################
@@ -33,8 +41,9 @@ SQL_path = 'ANNIE_SQL_RUNS.txt'
 # define color codes for text output
 RESET = "\033[0m"                      # white = processed and transferred
 YELLOW = "\033[93m"                    # yellow = scratch files present, but not complete
-RED = "\033[91m"                       # red = run not yet processed (no scratch files either)
+RED = "\033[91m"                       # red = run not yet processed (no scratch files either) / BC file not present in scratch but ProcessedData exists
 GREEN = "\033[92m"                     # green = scratch files complete, ready to be transferred
+DARK_GRAY = "\033[90m"                 # BC: Processed Data not in persistent
 
 
 # from run type name, get number
@@ -138,11 +147,76 @@ def check_run_data(sql, rawdata_path, prodata_path):
 
         print(f"{run_number:>4} {run_type:>2} {num_raw_files:>4} {num_processed_files:>4}")
 
+
+def check_beamcluster(sql, rawdata_path, prodata_path, beamcluster_path, BC_scratch_output_path):
+
+    # column header
+    print(f"{'RUN':<3}  STATUS")
+    print('-' * 13)
+
+    for run_number, run_type in sql.items():
+
+        raw_run_folder = os.path.join(rawdata_path, run_number)
+        processed_run_folder = os.path.join(prodata_path, f"R{run_number}")
+        scratch_BC_folder = os.path.join(BC_scratch_output_path, run_number)
+
+        # check if RAWDATA folder exists
+        if not os.path.isdir(raw_run_folder):
+            continue
+
+        # count part files
+        part_files = glob(os.path.join(raw_run_folder, f"RAWDataR{run_number}S0p*"))
+        num_raw_files = len(part_files)
+
+        # skip the very small runs
+        if num_raw_files < min_part_size:
+            continue
+
+        # check if ProcessedData folder exists
+        if not os.path.isdir(processed_run_folder):
+            print(f"{DARK_GRAY}{run_number:>4} no ProcessedData{RESET}")
+            continue
+
+        # check if beamcluster file exists in persistent
+        if not os.path.exists(beamcluster_path + f"BeamCluster_{run_number}.root"):
+
+            # if its not processed, check if it exists in scratch
+            if not os.path.isdir(scratch_BC_folder):
+                print(f"{RED}{run_number:>4} NOT PRESENT{RESET}")
+                continue
+
+            # if there are scratch files are present, count how many are complete
+            scratch_files = glob(os.path.join(scratch_BC_folder, f"BeamCluster_{run_number}*"))
+            num_scratch_files = len(scratch_files)
+
+            # assuming the number of part files per job is N, check how many should be there
+            expected_files = math.ceil(num_raw_files / N_per_job)
+
+            # if there are no scratch files (even if the folder exists), mark as not processed
+            if num_scratch_files == 0:
+                print(f"{RED}{run_number:>4} NOT PRESENT{RESET}")
+                continue
+
+            # all scratch part files are complete, ready to transfer
+            if num_scratch_files == expected_files:
+                print(f"{GREEN}{run_number:>4} READY TO TRANSFER{RESET}")
+                continue
+
+            # if not ready to transfer, display number of scratch processed
+            print(f"{YELLOW}{run_number:>4} PARTIALLY COMPLETE ({num_scratch_files}/{expected_files}){RESET}")
+            continue
+
+        # if file is transferred to persistent
+        print(f"{run_number:>4} COMPLETE")
+
           
 print('\n')
 run_type_list = get_run_type(run_type)
 sql = read_SQL(SQL_path, run_back, run_type_list)
-check_run_data(sql, rawdata_path, prodata_path)
+if check_BC:
+    check_beamcluster(sql, rawdata_path, prodata_path, beamcluster_path, BC_scratch_output_path)
+else:
+    check_run_data(sql, rawdata_path, prodata_path)
 print('\n')
 
 # done
