@@ -28,7 +28,8 @@ fi
 
 # setup transfer
 source /cvmfs/fermilab.opensciencegrid.org/products/common/etc/setup
-setup ifdhc v2_5_4
+setup jobsub_client
+setup ifdhc
 
 
 # copy processed files
