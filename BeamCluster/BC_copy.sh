@@ -14,7 +14,8 @@ echo "Copying file(s)..."
 echo ""
 
 source /cvmfs/fermilab.opensciencegrid.org/products/common/etc/setup
-setup ifdhc v2_5_4
+setup jobsub_client
+setup ifdhc
 
 if [ "$WHICH" == "BC" ]; then
   ifdh cp $output_path/BeamCluster/BeamCluster_$run.root $processed_path/
