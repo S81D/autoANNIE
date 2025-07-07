@@ -1,6 +1,7 @@
 import os
 import time
 import pytz
+import shutil
 from datetime import datetime
 
 # --------------------------------------------------------------- #
@@ -553,3 +554,25 @@ def LAPPD_pedestal(run_number):
     # 2024
     elif int(run_number) >= 4763:          # continuing to present (November 2024)
         return '2024_LAPPD645839'
+    
+
+# clear scratch output directory (Processed + beamcluster) of old runs if reprocessing
+def clearScratch(run_list, output_path, BC_scratch_output_path, which_one):
+    
+    for run in run_list:
+        if not run or run.startswith('#'):
+            continue
+
+        if which_one == 'Processed':
+            path_run = f"{output_path}/{run}"               # ProcessedData
+        elif which_one == 'BC':
+            path_run = f"{BC_scratch_output_path}/{run}"    # BeamCluster
+
+        print(f"Deleting: {path_run}")
+
+        try:
+            shutil.rmtree(path_run)
+        except FileNotFoundError:
+            print(f"Warning: {path_run} does not exist.")
+        except Exception as e:
+            print(f"Error deleting {path_run}: {e}")

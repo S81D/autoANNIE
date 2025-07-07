@@ -33,6 +33,8 @@ SQL_file = 'ANNIE_SQL_RUNS.txt'                   # SQL filename
 
 initial_submission_only = False                   # run PreProcess, BeamFetcher, submit the initial jobs and quit
 
+clear_scratch = False                             # will prompt the user with the option to delete run folders (Processed + BeamCluster) in your scratch output (useful if re-processing runs)
+
 '''@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'''
 
 #
@@ -152,6 +154,22 @@ if which_mode == '1':      # Event building mode
         if dls_vals[i] != -9999:     # -9999 = runs that occured during DLS transition and were passed to the master script to be removed - this condition could probably be removed for certain source runs: TODO
             runs_to_run.append(runs_to_run_user[i])
             DLS.append(str(dls_vals[i]))
+
+
+    # will clear scratch output run directories if specified by the user
+    if clear_scratch:
+        print('\n')
+        which_one = 'Processed'    # EventBuilding
+        confirm_delete = input('Would you like to delete any previous Processed output directories for the runs provided? (y/n):      ')
+        if confirm_delete == 'n':
+            print('\nWill not clear scratch, proceeding...')
+        elif confirm_delete == 'y':
+            print('\n')
+            hs.clearScratch(runs_to_run, output_path, BC_scratch_output_path, which_one)
+        elif user_confirm != 'y' and user_confirm != 'n':
+            print('\nInvalid response - please restart script\n')
+            exit()
+
     
     time.sleep(1)
     
@@ -329,6 +347,22 @@ if which_mode == '2':        # BeamCluster
         exit()
     print('\n')
     runs_to_run = hs.get_runs_from_user()
+
+
+    # will clear scratch output run directories if specified by the user
+    if clear_scratch:
+        print('\n')
+        which_one = 'BC'    # BeamCluster
+        confirm_delete = input('Would you like to delete any previous beamcluster output directories for the runs provided? (y/n):      ')
+        if confirm_delete == 'n':
+            print('\nWill not clear scratch, proceeding...')
+        elif confirm_delete == 'y':
+            print('\n')
+            hs.clearScratch(runs_to_run, output_path, BC_scratch_output_path, which_one)
+        elif user_confirm != 'y' and user_confirm != 'n':
+            print('\nInvalid response - please restart script\n')
+            exit()
+
 
     print('\n\n\n')
     print('*************************************************')
