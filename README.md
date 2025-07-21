@@ -26,6 +26,7 @@ autoANNIE/
 │   ├── tarball_create_script.py   #      - tar-balls toolanalysis for grid submission
 │   ├── copy_runs.py               #      - copy multiple runs from scratch to persistent, outside of the normal EventBuilding scripts
 │   ├── missing_scratch.py         #      - checks how many part files are processed (in scratch)
+│   ├── manual_merge_and_transfer_BC.sh # - can be used to manually merge BC files and transfer them (+ filtered files) to persistent/
 │   └── is_transferred.sh          #      - checks filesize of last RAWData part files; used to make sure run is fully transferred from the DAQ
 └── README.md                      
 ```
@@ -53,6 +54,7 @@ autoANNIE/
 * `python3 scripts/missing_scratch.py`
 * `python3 scripts/tarball_create_script.py`
 * `sh scripts/is_transferred.sh`
+* 'sh scripts/manual_merge_and_transfer_BC.sh`
 
 -----------------------
 
@@ -64,6 +66,7 @@ autoANNIE/
    * `scripts/check_run_status.py`
    * `scripts/missing_scratch.py`
    * `scripts/tarball_create_script.py`
+   * `scripts/manual_merge_and_transfer_BC.sh`
 
 - For the event building, the local copy of ToolAnalysis in ```/exp/annie/app/users/<username>/``` will be used to run the ```PreProcessTrigOverlap``` and ```BeamFetcherV2``` toolchains to create the necessary files prior to submitting grid jobs. This is why it is recommended to have an "event building" ToolAnalysis folder present in your `/exp/annie/app/` area.
 
