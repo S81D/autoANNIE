@@ -70,6 +70,8 @@ autoANNIE/
 
 - For the event building, the local copy of ToolAnalysis in ```/exp/annie/app/users/<username>/``` will be used to run the ```PreProcessTrigOverlap``` and ```BeamFetcherV2``` toolchains to create the necessary files prior to submitting grid jobs. This is why it is recommended to have an "event building" ToolAnalysis folder present in your `/exp/annie/app/` area.
 
+- Given that the `MRDDataDecoder` tool is DLS-dependent, in `lib/helper_script.py` there are [DLS timestamps](https://github.com/S81D/autoANNIE/blob/8472dfb76716f23dbe6f929e2b8119fc0e6667bc/lib/helper_script.py#L95C5-L103C6) that are hardcoded. I have included the dates through 2026 - if event building is used beyond 2026, please add the 2027 dates for DLS.
+
 - There are two options to submit runs: manaully (enter run by run) or through a list. For mass re-production of data, it is easier to populate a list named ```runs.list``` with the associated run numbers. If you elect to use the list, make sure there is a ```runs.list``` present in the working ```scratch``` directory.
 
 - Similarily, for `scripts/copy_runs.py` you must populate a `runs.list` file containing all runs you wish to transfer from scratch to persistent.
