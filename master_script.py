@@ -409,6 +409,7 @@ if which_mode == '2':        # BeamCluster
             parts_i, parts_f = hs.BC_breakup(runs_to_run[i], data_path, BC_job_size, run_type)
             n_jobs = len(parts_i)
 
+            # Disk space for BeamCluster jobs --> feel free to increase this if needed
             disk_space_factor = str(int(((BC_job_size*8)/1000) + 8))
             
             # initial submission
