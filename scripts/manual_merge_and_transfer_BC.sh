@@ -15,12 +15,12 @@ RUN=$1
 USER=<USER>
 
 SINGULARITY_COMMAND="-B/pnfs:/pnfs,/exp/annie/app/users/${USER}/temp_directory:/tmp,/exp/annie/data:/exp/annie/data,/exp/annie/app:/exp/annie/app"
-BC_PATH=/pnfs/annie/persistent/processed/processingData_EBV2/BeamClusterTrees/
+BC_PATH=/pnfs/annie/persistent/processed/BeamClusterTrees/
 SCRATCH_PATH=/pnfs/annie/scratch/users/${USER}/autoANNIE/
-LAPPD_BC_PATH=/pnfs/annie/persistent/processed/processingData_EBV2/BeamClusterTrees/LAPPDBeamClusterTrees/
+LAPPD_BC_PATH=/pnfs/annie/persistent/processed/BeamClusterTrees/LAPPDBeamClusterTrees/
 BC_SCRATCH_OUTPUT_PATH=/pnfs/annie/scratch/users/${USER}/output/beamcluster/
-LAPPD_FILTER_PATH=/pnfs/annie/persistent/processed/processingData_EBV2/processed_EBV2_LAPPDFiltered/
-MRD_FILTER_PATH=/pnfs/annie/persistent/processed/processingData_EBV2/processed_EBV2_MRDFiltered/
+LAPPD_FILTER_PATH=/pnfs/annie/persistent/processed/processed_EBV2_LAPPDFiltered/
+MRD_FILTER_PATH=/pnfs/annie/persistent/processed/processed_EBV2_MRDFiltered/
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - 
