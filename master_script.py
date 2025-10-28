@@ -50,8 +50,9 @@ app_path = '/exp/annie/app/users/' + user + '/' + TA_folder                     
 scratch_path = '/pnfs/annie/scratch/users/' + user + '/' + grid_sub_dir                            # clone autoANNIE repository/set of grid scripts
 output_path = '/pnfs/annie/scratch/users/' + user + '/' + grid_output                              # general output directory (event building jobs will be outputted directly here)
 BC_scratch_output_path = output_path + 'beamcluster/'                                              # output from the BeamCluster jobs (embedded in folder above)
+raw_path = '/pnfs/annie/persistent/raw/raw/'                                                       # raw data location, transferred from the DAQ
+processed_path = '/pnfs/annie/persistent/processed/'                                               # general directory for "processed" data, such as BeamFetcher files, ProcessedData, etc...
 
-processed_path = '/pnfs/annie/persistent/processed/processingData_EBV2/'                           # general directory for "processed" data, such as BeamFetcher files, ProcessedData, etc...
 data_path = processed_path + 'processed_EBV2/'                                                     # Processed Data
 trig_path = '/pnfs/annie/persistent/processed/trigoverlap/'                                        # trigger overlap tar files
 beamcluster_path = processed_path + 'BeamClusterTrees/'                                            # BeamCluster root files
@@ -60,9 +61,6 @@ lappd_EB_path = processed_path + 'LAPPD_EB_output/'                             
 lappd_BC_path = beamcluster_path + 'LAPPDBeamClusterTrees/'                                        # filtered events w/ LAPPDs stored in root files
 lappd_filter_path = processed_path + 'processed_EBV2_LAPPDFiltered/'                               # filtered, processed data w/ LAPPD events
 mrd_filter_path = processed_path + 'processed_EBV2_MRDFiltered/'                                   # same, for the MRD
-
-raw_path = '/pnfs/annie/persistent/raw/raw/'                                                       # raw data location, transferred from the DAQ
-
 lappd_pedestal_path = '/pnfs/annie/persistent/processed/processingData_EBV2/LAPPD_Pedestal/'       # Pedestal files for the LAPPDs in the BeamCluster jobs
 
 
