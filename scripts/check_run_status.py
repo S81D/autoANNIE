@@ -31,10 +31,10 @@ check_BC = False               # True = check BeamCluster files instead
 
 # modify accordingly
 rawdata_path = '/pnfs/annie/persistent/raw/raw/'
-prodata_path = '/pnfs/annie/persistent/processed/processingData_EBV2/processed_EBV2/'
+prodata_path = '/pnfs/annie/persistent/processed/processed_EBV2/'
 scratch_output = '/pnfs/annie/scratch/users/<user>/output/'          # edit accordingly
 
-beamcluster_path = '/pnfs/annie/persistent/processed/processingData_EBV2/BeamClusterTrees/'
+beamcluster_path = '/pnfs/annie/persistent/processed/BeamClusterTrees/'
 BC_scratch_output_path = scratch_output + 'beamcluster/'
 N_per_job = 50   # number of part files per beamcluster job
 
