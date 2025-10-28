@@ -15,8 +15,8 @@ import time
 RUN_LIST = "runs.list"    # list of runs to copy
 COPY_SCRIPT = "lib/copy_grid_output.sh"
 OUTPUT_PATH = "/pnfs/annie/scratch/users/<user>/output/"      # adjust accordingly
-PROCESSED_PATH = "/pnfs/annie/persistent/processed/processingData_EBV2/processed_EBV2/"
-LAPPD_PROCESSED_PATH = "/pnfs/annie/persistent/processed/processingData_EBV2/LAPPD_EB_output/"
+PROCESSED_PATH = "/pnfs/annie/persistent/processed/processed_EBV2/"
+LAPPD_PROCESSED_PATH = "/pnfs/annie/persistent/processed/LAPPD_EB_output/"
 RAW_PATH = "/pnfs/annie/persistent/raw/raw/"
 RUN_TYPE = "beam"            # ProcessedData format will be different for each run type
 
