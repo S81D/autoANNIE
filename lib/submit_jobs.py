@@ -741,11 +741,10 @@ def container_BC(name_TA, input_path, run_type):
         file.write('echo "LAPPD Pedestal arg: ${PED}" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
         file.write('echo "LAPPD Pedestal folder contents (${PED}): " >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
         file.write('ls ${PED} >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
-        file.write('echo "PedinputfileTXT line (unchanged): " >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
-        file.write("grep '^PedinputfileTXT [^/]' configfiles/LAPPDProcessedAna/Configs >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n")
-        file.write('sed -i "s|^PedinputfileTXT /pnfs.*|PedinputfileTXT ${PED}/P|" configfiles/LAPPDProcessedAna/Configs \n')
+        file.write("grep '^[[:space:]]*PedinputfileTXT[[:space:]]' configfiles/LAPPDProcessedAna/Configs >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n")
+        file.write('sed -i "/^[[:space:]]*#/! s|^[[:space:]]*PedinputfileTXT[[:space:]].*|PedinputfileTXT ${PED}/P|" configfiles/LAPPDProcessedAna/Configs\n')
         file.write('echo "PedinputfileTXT line (changed): " >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
-        file.write("grep '^PedinputfileTXT /pnfs' configfiles/LAPPDProcessedAna/Configs >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n")
+        file.write("grep '^[[:space:]]*PedinputfileTXT[[:space:]]' configfiles/LAPPDProcessedAna/Configs >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n")
         file.write('echo "" >> /srv/logfile_${PART_NAME}_${PI}_${PF}.txt\n')
         file.write('\n')
 
@@ -798,21 +797,6 @@ def container_BC(name_TA, input_path, run_type):
     file.write('### END ###\n')
 
     file.close()
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
 
 
 
